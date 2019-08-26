@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="en-US">
+  <head>
+    <meta charset="utf-8">
+    <title>Intro to JavaScript</title>
+    <style>
+      p {
+        font-family: 'helvetica neue', helvetica, sans-serif;
+        letter-spacing: 1px;
+        text-align: center;
+        border: 2px solid rgba(7, 4, 7, 0.6);
+        background: rgba(152, 114, 170, 0.3);
+        color: rgb(58, 3, 75);
+        border-radius: 10px;
+        padding: 3px 10px;
+        display: grid;
+        cursor: pointer;
+      }
+    </style>
+  </head>
+  <body>
+    <p>Course : Please Enter a Course Name</p>
+    <script>
+      const courseName = document.querySelector('p');
+      courseName.addEventListener('click', updateCourseName);
+      function updateCourseName() 
+      {
+        let name = prompt('Enter a new name');
+        courseName.textContent = 'Course : ' + name;
+      }
+    </script>
+  </body>
+</html>
