@@ -14,3 +14,8 @@ Each day there will be a new directory added with the code snippets used for the
 - variable declarations (var, let, const)
 - lexical scope
 - hoisting
+
+## Day 3
+
+- arrays
+- objects
