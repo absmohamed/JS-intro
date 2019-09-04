@@ -20,13 +20,13 @@ Each day there will be a new directory added with the code snippets used for the
 - arrays
 - objects
 
-## Day 4
+## Day 4 & 5
 
 - control flow (loops, continue, break, labels, exception handling)
 - functions as first class objects
 - callback basics
 
-## Day 5
+## Day 6
 
 - object constructors
 - classes
