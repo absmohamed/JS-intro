@@ -1,8 +1,5 @@
-let formButton = document.querySelector("input[type=submit]");
+let firstP = document.querySelector("p")
+console.log(firstP)
 
-
-formButton.addEventListener("click", function (event) {
-  event.preventDefault()
-  console.log(event)
-  event.target.value += "!"
-})
+let form = document.querySelector("#page-form")
+console.log(form)

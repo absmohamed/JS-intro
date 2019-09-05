@@ -4,7 +4,7 @@
 - Querying the DOM
 - Event listeners
 - [Slides]()
-- [Code examples](Dom_EventListeners/code)
+- Code examples in the **code** folder
 
 # Event Listeners
 
@@ -16,7 +16,7 @@ Here is the [MDN event reference documentation](https://developer.mozilla.org/en
 
 Before we can talk about event listeners, we need to have a basic understanding of the DOM (Document Object Model).
 
-Document Object Model
+**Document Object Model**
 
 _How many of you think that the HTML you write is the DOM?_
 
@@ -65,7 +65,7 @@ _View the source of the above code & see how it differs from what we see in dev 
 
 **Querying The DOM**
 
-Another very useful concept is being able to manipulate DOM nodes that are loaded in the browser. We can access these nodes by querying the DOM.
+A very useful concept is being able to manipulate DOM nodes that are loaded in the browser. We can access these nodes by querying the DOM.
 
 If we want to get the first element that matches a given CSS selector we can use **querySelector()**.
 
@@ -138,27 +138,10 @@ console.log(li1)
 console.log(li2)
 ```
 
-As we can see li2 now has 5 elements in it where li1 still has the original 4.
+As we can see li2 now has 5 elements in it where li1 still has the original 2.
 
 The querySelectorAll() method is actually less performant as well since it immediately gathers a static list of the nodes properties.
 
-**Removing From The DOM**
-
-If we would like to remove a node from the DOM we cannot do so directly but we can remove children from a parent element.
-
-```javascript
-let li3 = document.querySelector("li")
-let ul = document.querySelector("ul")
-
-ul.removeChild(li3)
-```
-
-A nice little work around is we can actually get an elements parent by using the **parentNode** property. So we can actually remove a node without having to query for its parent.
-
-```javascript
-let li4 = document.querySelector("li")
-secondLi.parentNode.removeChild(li4)
-```
 
 ## Adding an event listener
 
@@ -214,8 +197,122 @@ let myButton = document.querySelector("input[type=submit]")
 
 myButton.addEventListener("click", function(event) {
 	event.preventDefault()
-	event.target.value += "!"
+	event.target.value = "You clicked!"
 })
 ```
+**Event Bubbling**
 
-We can also use this to access the the DOM node unless we are using a fat arrow function in the listener (fat arrow functions have a different scope for the this keyword).
+Event bubbling is where multiple events are invoked at once on different DOM elements. Here is an example
+
+```javascript
+let div = document.querySelector("div");
+let p = div.querySelector("p");
+
+div.addEventListener("click", function (event) {
+    alert("Div clicked");
+});
+
+p.addEventListener("click", function (event) {
+    alert("P clicked");
+});
+
+//Looking at our DOM how many alerts will fire?
+//Which order would they be fired in if there is more than one?
+```
+
+When you do click on the paragraph inside of the div we first see “P clicked" but immediately after that we get “Div clicked". This is called event bubbling. The event will always start from the inner most child and bubble up to its parents. We can stop this bubbling effect by using **stopPropagation()**.
+
+```javascript
+let div = document.querySelector("div");
+let p = div.querySelector("p");
+
+div.addEventListener("click", function (event) {
+    alert("Div clicked");
+});
+
+p.addEventListener("click", function (event) {
+    event.stopPropagation();
+    alert("P clicked");
+});
+
+//Looking at our DOM how many alerts will fire?
+//Which order would they be fired in if there is more than one?
+```
+
+There is a 3rd argument for event listeners that takes in an optional config object. Normally this argument defaults to false but it also has 3 other options.
+
+* capture - this event will be triggered before any other element beneath it.
+* once - this event will only be triggered once
+* passive - any preventDefault() will be ignored
+
+Lets take a look at how the capture option can also can our event listeners order.
+
+```javascript
+let div = document.querySelector("div");
+let p = div.querySelector("p");
+
+div.addEventListener("click", function (event) {
+    alert("Div clicked");
+}, { capture: true });
+
+p.addEventListener("click", function (event) {
+    alert("P clicked");
+});
+```
+
+Capture made sure that it was ran first thus removing it from the queue of events needed to run during bubbling.
+
+Lets also take a look at the once config object option.
+
+```javascript
+let div = document.querySelector("div");
+let p = div.querySelector("p");
+
+div.addEventListener("click", function (event) {
+    alert("Div clicked");
+}, { once: true });
+
+p.addEventListener("click", function (event) {
+    alert("P clicked");
+});
+```
+
+When we first click on the paragraph everything functions the same but if we click it again we see that the div click event does not run again.
+
+**Removing Event Listeners**
+
+Event listeners can be removed by referencing the DOM node, event type and the callback function to be removed.
+
+We can mimic our once config option behaviour by doing using this concept.
+
+```javascript
+let div = document.querySelector("div");
+let p = div.querySelector("p");
+
+div.addEventListener("click", function divClick (event) {
+    alert("Div clicked");
+    div.removeEventListener("click", divClick);
+});
+
+p.addEventListener("click", function (event) {
+    alert("P clicked");
+});
+```
+
+We can also remove event listeners from one event by clicking on another.
+
+```javascript
+let li1 = document.querySelector("li:nth-child(1)");
+let li2 = document.querySelector("li:nth-child(2)");
+
+function liClick (event) {
+    alert("li was clicked");
+};
+
+li1.addEventListener("click", liClick); 
+
+li2.addEventListener("click", function (event) {
+    li1.removeEventListener("click", liClick);
+    alert("remove li1 event");
+}); 
+```
