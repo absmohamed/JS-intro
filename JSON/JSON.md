@@ -1,5 +1,8 @@
 # Agenda
-
+* [JSON Intro](#json-intro)
+* [Using JSON objects](#using-json-objects)
+* [Storing JSON objects](#storing-json-objects)
+* [Read a JSON object from a file](#read-a-json-object-from-a-file)
 * [Code samples and challenges](#code-samples-and-challenges)
 
 ## JSON Intro
