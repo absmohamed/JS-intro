@@ -1,5 +1,7 @@
 # Classes
 
+[Slides](https://docs.google.com/presentation/d/1p08ALb-i_FzT462xNetjDv9O5LQXsFYf5dPuL4rZ3qM/edit?usp=sharing)
+
 ## Static properties and methods (class level properties)
 
 Just like in other languages, we can define static properties and methods on classes. These properties and methods act on the class itself, instead of an instance of the class.

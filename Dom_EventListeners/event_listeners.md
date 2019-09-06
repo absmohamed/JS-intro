@@ -20,6 +20,7 @@ The HTML you write is not really the DOM but it is parsed by the browser and tur
 _Is the code we see in Chrome’s dev tools the DOM?_
 
 Kinda. When your looking at the code in dev tools that looks like HTML it is actually just a visual representation of the DOM.
+![DOM tree](dom_tree.gif)
 
 Hmmm but it looks exactly like our HTML and you just said that the HTML we write is not the DOM so what gives?
 
