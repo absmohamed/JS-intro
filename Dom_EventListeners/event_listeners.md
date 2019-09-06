@@ -1,16 +1,11 @@
 # Agenda and resources
 
-- Understanding the DOM
-- Querying the DOM
-- Event listeners
-- [Slides]()
-- Code examples in the **code** folder
+- [Agenda and resources](#agenda-and-resources)
+	- [The DOM](#the-dom)
+- [Event Listeners](#event-listeners)
+	- [Adding an event listener](#adding-an-event-listener)
+	- [Code examples and challenge](#code-examples-and-challenge)
 
-# Event Listeners
-
-Event listeners are a Web API that allows us to listen for events on DOM nodes. There are many different kinds of events that we can listen for.
-
-Here is the [MDN event reference documentation](https://developer.mozilla.org/en-US/docs/Web/Events)
 
 ## The DOM
 
@@ -142,6 +137,11 @@ As we can see li2 now has 5 elements in it where li1 still has the original 2.
 
 The querySelectorAll() method is actually less performant as well since it immediately gathers a static list of the nodes properties.
 
+# Event Listeners
+
+Event listeners are a Web API that allows us to listen for events on DOM nodes. There are many different kinds of events that we can listen for.
+
+Here is the [MDN event reference documentation](https://developer.mozilla.org/en-US/docs/Web/Events)
 
 ## Adding an event listener
 
@@ -316,3 +316,7 @@ li2.addEventListener("click", function (event) {
     alert("remove li1 event");
 }); 
 ```
+## Code examples and challenge
+Code examples can be found in the **code** directory here. 
+
+Try the challenges in the **challenge** directory.

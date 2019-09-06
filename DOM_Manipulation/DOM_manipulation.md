@@ -1,10 +1,13 @@
 # Agenda and resources
 
-- Adding to the DOM
-- Removing from the DOM
-- Modifying classes and attributes
-- Adding and retrieving CSS styles
-- Code examples in the **code** folder
+- [Agenda and resources](#agenda-and-resources)
+- [DOM Manipulation](#dom-manipulation)
+	- [Manipulating The DOM](#manipulating-the-dom)
+	- [Adding To The DOM](#adding-to-the-dom)
+	- [Removing From The DOM](#removing-from-the-dom)
+	- [Modifying Classes and Attributes](#modifying-classes-and-attributes)
+	- [Adding & Retrieving CSS Styles](#adding--retrieving-css-styles)
+	- [Element Properties](#element-properties)
 
 # DOM Manipulation
 
@@ -42,7 +45,7 @@ _Use the below HTML code to load up a web page that we will be using to practice
 </html>
 ```
 
-**Adding To The DOM**
+## Adding To The DOM
 
 We can create new DOM objects in JavaScript.
 
@@ -72,7 +75,7 @@ You may also have heard of document.write() to add html elements to the screen b
 document.write("<h1>Hello There</h1>")
 ```
 
-**Removing From The DOM**
+## Removing From The DOM
 
 If we would like to remove a node from the DOM we can use removeChild() to remove a child of a node, or remove() to remove a node itself.
 
@@ -97,7 +100,7 @@ let li2 = document.querySelector("li")
 li2.parentNode.removeChild(li2)
 ```
 
-**Modifying Classes & Attributes**
+## Modifying Classes and Attributes
 
 Adding and removing classes from a node is very easy.
 
@@ -126,7 +129,7 @@ Object.assign(formButton, {
 })
 ```
 
-**Adding & Retrieving CSS Styles**
+## Adding & Retrieving CSS Styles
 
 CSS styles can be applied to a node just like any other property, the big gotcha is instead of dashes we camel case the names of the style properties.
 
@@ -134,7 +137,7 @@ CSS styles can be applied to a node just like any other property, the big gotcha
 title.style.paddingLeft = "100px"
 ```
 
-If we want to retrieve the value of a certain style property using .style will only give us a value if the style has been applied directly to the node. However it will not give us any computed style such as from a class or styling inherited from its parent.
+If we want to retrieve the value of a certain style property using `.style` will only give us a value if the style has been applied directly to the node. However it will not give us any computed style such as from a class or styling inherited from its parent.
 
 ```javascript
 title.classList.add("blue")
@@ -147,7 +150,7 @@ We can retrieve this value using **window.getComputedStyle()**.
 window.getComputedStyle(title).getPropertyValue("color")
 ```
 
-**Element Properties**
+## Element Properties
 
 The last thing we will discuss about our node elements are a couple of properties that we always have access to. Those are **innerHTML** and **textContent** (Note: there is also a property called innerText but it should be avoided as it is a non standard property that was introduced in Internet Explorer and moved over to WebKit browser to avoid compatibility issues).
 
