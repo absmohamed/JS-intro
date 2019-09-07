@@ -190,11 +190,7 @@ If you have trouble accessing them, let the instructor know.
 ### Bonus Challenge
 Build a web page that you can use to track code challenges that you want to complete.
 
-Here is an example (that uses Bulma)
-
-<iframe src="https://giphy.com/embed/kGcqRFz8PLOV5Tqje6" width="480" height="270" frameBorder="0" class="giphy-embed" allowFullScreen></iframe><p><a href="https://giphy.com/gifs/ca-js-dom-manipulation-kGcqRFz8PLOV5Tqje6">via GIPHY</a></p>
-
-Yours doesn't have to be styled - just have fun with it!
+[Here is an example (that uses Bulma)](https://gph.is/g/4DLx87B). Yours doesn't have to be styled - just have fun with it!
 
 *For this challenge, it's OK that the data is only available until you refresh the page.*
 
