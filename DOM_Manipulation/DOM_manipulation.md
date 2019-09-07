@@ -8,6 +8,7 @@
 	- [Modifying Classes and Attributes](#modifying-classes-and-attributes)
 	- [Adding & Retrieving CSS Styles](#adding--retrieving-css-styles)
 	- [Element Properties](#element-properties)
+	- [Challenge](#challenge)
 
 # DOM Manipulation
 
@@ -175,3 +176,11 @@ ul.innerHTML = null
 ```
 
 The same concept applies for textContent.
+
+## Challenge
+
+There are two challenges in Ed for you to try:
+* [DOM Manipulation - The Book List](https://edstem.org/courses/3808/challenges/6406)
+* [DOM Manipulation - About Me](https://edstem.org/courses/3808/challenges/6408)
+
+If you have trouble accessing them, let the instructor know.
