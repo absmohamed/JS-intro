@@ -8,7 +8,9 @@
 	- [Modifying Classes and Attributes](#modifying-classes-and-attributes)
 	- [Adding & Retrieving CSS Styles](#adding--retrieving-css-styles)
 	- [Element Properties](#element-properties)
-	- [Challenge](#challenge)
+	- [Challenges](#challenges)
+		- [Bonus Challenge](#bonus-challenge)
+		- [Extra Bonus Challenge - persisting the challenge data](#extra-bonus-challenge---persisting-the-challenge-data)
 
 # DOM Manipulation
 
@@ -177,10 +179,32 @@ ul.innerHTML = null
 
 The same concept applies for textContent.
 
-## Challenge
+## Challenges
 
 There are two challenges in Ed for you to try:
 * [DOM Manipulation - The Book List](https://edstem.org/courses/3808/challenges/6406)
 * [DOM Manipulation - About Me](https://edstem.org/courses/3808/challenges/6408)
 
 If you have trouble accessing them, let the instructor know.
+
+### Bonus Challenge
+Build a web page that you can use to track code challenges that you want to complete.
+
+Here is an example (that uses Bulma)
+
+<iframe src="https://giphy.com/embed/kGcqRFz8PLOV5Tqje6" width="480" height="270" frameBorder="0" class="giphy-embed" allowFullScreen></iframe><p><a href="https://giphy.com/gifs/ca-js-dom-manipulation-kGcqRFz8PLOV5Tqje6">via GIPHY</a></p>
+
+Yours doesn't have to be styled - just have fun with it!
+
+*For this challenge, it's OK that the data is only available until you refresh the page.*
+
+### Extra Bonus Challenge - persisting the challenge data
+Making data persist on a client isn't something we typically do, unless it's for temporarily storing information for quick access - also known as *caching*. The reason for this is that we don't store and access data on our user's systems - that's a security issue. 
+
+We can store data in the browser because there are security measures and settings built into the browser (well - in the directories used by the browser). But if we just store the data in the browser, it's only available on that computer and from that browser, and only until we clear out the data. 
+
+For an application like the challenge tracker, we would persist data on the server, and retrieve it, and update it from the client (browser). This is similar to what we did with our Rails app. We won't get into this until we cover Express - so don't try to tackle that right now.
+
+[Research using localStorage](https://www.w3schools.com/html/html5_webstorage.asp), and see if you can use localStorage to save your challenge data in the client(browser). Once you do this, as long as you're on the same computer and using the same browser, you won't lose your challenges every time you reload.
+
+
