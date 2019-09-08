@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <script src="https://code.jquery.com/jquery-3.4.1.min.js"
+    integrity="sha256-CSXorXvZcTkaix6Yvo6HppcZGetbYMGWSFlBw8HfCJo=" crossorigin="anonymous"></script>
+</head>
+
+<body>
+  <button id="button">Get Jokes</button>
+  <script>
+    document.querySelector("#button").addEventListener("click", () => {
+      $.getJSON("https://icanhazdadjoke.com/", (dadJoke1) => {
+        $.getJSON("https://icanhazdadjoke.com/", (dadJoke2) => {
+          $.getJSON("https://icanhazdadjoke.com/", (dadJoke3) => {
+            $.getJSON("https://icanhazdadjoke.com/", (dadJoke4) => {
+              $.getJSON("https://icanhazdadjoke.com/", (dadJoke5) => {
+                let jokeArray = [dadJoke1.joke, dadJoke2.joke, dadJoke3.joke, dadJoke4.joke,
+                  dadJoke5.joke
+                ];
+                console.log(jokeArray);
+              });
+            });
+          });
+        });
+      });
+    });
+  </script>
+</body>
+
+</html>
