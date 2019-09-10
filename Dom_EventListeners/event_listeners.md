@@ -2,8 +2,10 @@
 
 - [Agenda and resources](#agenda-and-resources)
 	- [The DOM](#the-dom)
+	- [Querying The DOM](#querying-the-dom)
 - [Event Listeners](#event-listeners)
 	- [Adding an event listener](#adding-an-event-listener)
+	- [Event Bubbling](#event-bubbling)
 	- [Code examples and challenge](#code-examples-and-challenge)
 
 
@@ -59,7 +61,7 @@ The Document Object Model is what is know as a programming interface for HTML. H
 
 _View the source of the above code & see how it differs from what we see in dev tools on Chrome._
 
-**Querying The DOM**
+## Querying The DOM
 
 A very useful concept is being able to manipulate DOM nodes that are loaded in the browser. We can access these nodes by querying the DOM.
 
@@ -201,7 +203,7 @@ myButton.addEventListener("click", function(event) {
 	event.target.value = "You clicked!"
 })
 ```
-**Event Bubbling**
+## Event Bubbling
 
 Event bubbling is where multiple events are invoked at once on different DOM elements. Here is an example
 
