@@ -2,8 +2,12 @@
 
 - [Agenda and resources](#agenda-and-resources)
 	- [The DOM](#the-dom)
+	- [Document Object Model](#document-object-model)
+	- [Querying The DOM](#querying-the-dom)
 - [Event Listeners](#event-listeners)
 	- [Adding an event listener](#adding-an-event-listener)
+	- [Event Bubbling](#event-bubbling)
+	- [Removing Event Listeners](#removing-event-listeners)
 	- [Code examples and challenge](#code-examples-and-challenge)
 
 
@@ -11,7 +15,7 @@
 
 Before we can talk about event listeners, we need to have a basic understanding of the DOM (Document Object Model).
 
-**Document Object Model**
+## Document Object Model
 
 _How many of you think that the HTML you write is the DOM?_
 
@@ -59,7 +63,7 @@ The Document Object Model is what is know as a programming interface for HTML. H
 
 _View the source of the above code & see how it differs from what we see in dev tools on Chrome._
 
-**Querying The DOM**
+## Querying The DOM
 
 A very useful concept is being able to manipulate DOM nodes that are loaded in the browser. We can access these nodes by querying the DOM.
 
@@ -201,7 +205,7 @@ myButton.addEventListener("click", function(event) {
 	event.target.value = "You clicked!"
 })
 ```
-**Event Bubbling**
+## Event Bubbling
 
 Event bubbling is where multiple events are invoked at once on different DOM elements. Here is an example
 
@@ -280,7 +284,7 @@ p.addEventListener("click", function (event) {
 
 When we first click on the paragraph everything functions the same but if we click it again we see that the div click event does not run again.
 
-**Removing Event Listeners**
+## Removing Event Listeners
 
 Event listeners can be removed by referencing the DOM node, event type and the callback function to be removed.
 
