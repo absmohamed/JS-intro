@@ -420,7 +420,7 @@ app.post("/students", (req, res) => {
 });
 ```
 
-If we search through the output in the terminal window there is no property holding the name we just through with the request. That is because at the moment the body information of the request is in the form of a stream. Now if we really wanted to we could convert this stream to actual usable data ourselves but with express’ concept of middleware we don’t have to!
+If we search through the output in the terminal window there is no property holding the name we sent through to add a student. That is because at the moment the body information of the request is in the form of a stream. Now if we really wanted to we could convert this stream to actual usable data ourselves but with express’ concept of middleware we don’t have to!
 
 Lets install the body-parser middleware.
 
