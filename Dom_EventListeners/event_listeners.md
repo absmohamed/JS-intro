@@ -2,10 +2,12 @@
 
 - [Agenda and resources](#agenda-and-resources)
 	- [The DOM](#the-dom)
+	- [Document Object Model](#document-object-model)
 	- [Querying The DOM](#querying-the-dom)
 - [Event Listeners](#event-listeners)
 	- [Adding an event listener](#adding-an-event-listener)
 	- [Event Bubbling](#event-bubbling)
+	- [Removing Event Listeners](#removing-event-listeners)
 	- [Code examples and challenge](#code-examples-and-challenge)
 
 
@@ -13,7 +15,7 @@
 
 Before we can talk about event listeners, we need to have a basic understanding of the DOM (Document Object Model).
 
-**Document Object Model**
+## Document Object Model
 
 _How many of you think that the HTML you write is the DOM?_
 
@@ -282,7 +284,7 @@ p.addEventListener("click", function (event) {
 
 When we first click on the paragraph everything functions the same but if we click it again we see that the div click event does not run again.
 
-**Removing Event Listeners**
+## Removing Event Listeners
 
 Event listeners can be removed by referencing the DOM node, event type and the callback function to be removed.
 
