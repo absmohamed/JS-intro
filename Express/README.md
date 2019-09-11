@@ -1,317 +1,3 @@
-# Node and Express
-
-## Requirements
-
-* Postman - https://www.getpostman.com/
-
-
-## Node.js Web Server
-
-We looked at this some weeks ago, but let's remember how we can create a simple http server in Nodejs. 
-
-*Remind me - what is the purpose of a web server?*
-
-The main purpose of any web server is to **store, process and deliver data** through the internet.
-
-*What is the protocol that we use to send information across the web?*
-
-Correct HTTP/S is the protocol we use.
-
-*What are the HTTP verbs that we can use when communicating over HTTP and what are those verbs meant to be used for?*
-
-* **POST** - creating a resource
-* **GET** - reading a resource
-* **PUT** - updating a resource
-* **PATCH** - updating a resource
-* **DELETE** - removing a resource
-
-*When we were programming our Rails application what was the name of the web server that came pre-configured with Rails?*
-
-Correct it was Puma. Node.js also comes with a web server but unlike Rails we need to actually setup our web server using the HTTP module that come with Node.js. Lets first create a new file called app.js and require the http module.
-
-app.js
-
-```javascript
-const http = require("http");
-```
-
-Now that we have the module required we can use it to create our first web server in Node.
-
-app.js
-
-```javascript
-const http = require('http');
-
-const hostname = '127.0.0.1';
-const port = 3000;
-
-// When we create an http server, we pass it a callback function that performs the actions of the server
-const server = http.createServer((req, res) => {
-  res.statusCode = 200;
-  res.setHeader('Content-Type', 'text/plain');
-  res.end('Hello World');
-});
-
-// What is the third argument to the listen method on http server? When do you think it is called?
-server.listen(port, hostname, () => {
-  console.log(`Server running at http://${hostname}:${port}/`);
-});
-```
-
-To run the server we need to use Node.js
-
-```
-node app.js
-```
-
-Lets go to localhost:3000 and see if everything is working. Awesome! We have a web server running.
-
-Now looking at our callback function in createServer() we have two arguments (req and res). *Req* is short for *request* and holds information about the HTTP request we sent to the server and *res* is short for *response* and used to generate and send the HTTP response from the server.
-
-Some things to notice about our server:
-* No routes (no matter what we type in to the url we are always getting the ‘Hello Word’ message)
-* No HTTP verb, just like above it doesn’t matter what verb we are using, it is all going to the same place. We can test this with Postman
-
-## Using Postman
-The simplest use of Postman is to send a request with no body to a URL. The URL will contain a server name, port, and optionally, a path:
-![Postman GET request](img/postman_get.png)
-
-You can change the request verb to Post, Put, Delete - any of the choices - and we will see the same response from the server.
-
-## The request argument
-
-Lets take a look inside of the req argument to see if it has any information we can use to create different routes and display different information based on those routes.
-
-app.js
-
-```javascript
-const http = require('http');
-
-const hostname = '127.0.0.1';
-const port = 3000;
-
-const server = http.createServer((req, res) => {
-    console.log(req);
-    res.end();
-});
-
-server.listen(port, hostname, () => {
-  console.log(`Server running at http://${hostname}:${port}/`);
-});
-```
-
-There is a bunch of information in the response object but the properties we are interested in to solve our issue is the method and url properties.
-
-app.js
-
-```javascript
-const http = require('http');
-
-const hostname = '127.0.0.1';
-const port = 3000;
-
-const server = http.createServer((req, res) => {
-    console.log(req.method);
-    console.log(req.url);
-    res.end();
-});
-
-server.listen(port, hostname, () => {
-  console.log(`Server running at http://${hostname}:${port}/`);
-});
-```
-
-Looks like these hold the url for the request and the actual HTTP method used. 
-
-## Basic routing
-Let's use the url and method information from the request object to create a new app that takes a list of students and matches two together randomly for eating lunch together. We will have 3 different routes:
-
-* ‘/‘ - Match 2 students together and return the match
-* ‘/students’ - Get a list of all of our students
-* ‘/students’ - Create a new student
-
-*Which HTTP verb should we use for each route?*
-
-* ‘/‘ - Match 2 students together and return the match (GET)
-* ‘/students’ - Get a list of all of our students (GET)
-* ‘/students’ - Create a new student (POST)
-
-Ok now we know the route and the HTTP verb lets modify our code to look for these.
-
-student-app.js
-
-```javascript
-const http = require('http');
-
-const hostname = '127.0.0.1';
-const port = 3000;
-
-const server = http.createServer((req, res) => {
-  if (req.method === "GET" && req.url === "/") {
-    console.log("matching students");
-  } // What other else/if should we add here to take care of all three routes, and any invalid route?
-
-  res.end();
-});
-
-server.listen(port, hostname, () => {
-  console.log(`Server running at http://${hostname}:${port}/`);
-});
-```
-
-If we go to localhost:3000 and check the terminal we can see that we are logging to our terminal window “matching students”.
-
-*What do we see at /students?*
-
-*How can we test the /students POST route?*
-
-So we can see that all of our routes are working lets actually use these routes now to finish off our apps functionality. 
-
-### Listing students - the /students route (GET)
-First lets start with showing all of our students. To mock this data we will just create an array to hold the names.
-
-```javascript
-const students = ["Nataha", "Shakti", "Santosh", "Allen", "James", "Blake"];
-```
-
-*What mime type we should set our Content-Type to?*
-
-If we want to send back json then it should be application/json. If we want html then it should be text/html.
-
-For a list of mime types visit this link:
-
-https://developer.mozilla.org/en-US/docs/Web/HTTP/Basics_of_HTTP/MIME_types/Complete_list_of_MIME_types
-
-
-We'll use json - let's add this code to the if block for GET on /students:
-
-student-app.js
-
-```javascript
-console.log("getting students");
-res.writeHead(200, {'Content-Type': 'application/json; charset=UTF-8'});
-res.write(JSON.stringify(students));
-```
-
-After restarting the server and visiting localhost:3000/students we should see our student array as json. Lets now handle the functionality for when somewhen visits a route that doesn’t exist. 
-
-### Invalid route handling
-
-When we get an invalid route, let's throw an error saying that the route does not exist. 
-
-But before we do that you may have noticed that whenever we are hitting the api through the browser two requests are coming through. One for the actual url we typed in and another to /favicon.ico, this is the browsers default behaviour so lets handle the /favicon.ico route as well.
-
-We'll add another else/if block before the final else block that catches invalid routes, and the final else block:
-
-student-app.js
-
-```javascript
-else if (req.url === "/favicon.ico") {
-    console.log("We don’t have a favicon");
-} else {
-    console.log("could not find the route");
-    throw "Route not found";
-}
-```
-
-Ok so everything is still fine if we go to /students buts lets take a look at if we go to route that doesn’t exist such as /class. We see an error in the console but…….oh no it looks like our node program has exited and the web server is now completely shut down. If we try to go back to /students we can see that the web server is no longer running.
-
-We need to use something that will restart our server if it errors and we don't catch it. This will be our first installed dependency for this app, so it's time to talk about our project environment.
-
-## Restarting after errors with Forever
-
-Inevitably our web server will run into an error. We as programmers try our best to code for every possible situation but in the end we are human and some things just slip through the gaps. It would be very bad if our whole web server stopped working just because we hit one error we did not catch. So we need something that makes sure our web server will be rebooted if it ever encounters an error and exits.
-
-### Forever
-
-Forever is a CLI tool that ensures a given script is run continuously (IE forever). So if we want to ensure our web server will reboot after a crash we can let forever handle it. Lets install forever and get it setup. But instead of installing it globally, let's talk about `npm init`, package `node_modules`, and `package.json`.
-
-
-## NPM init, node_modules, and package.json
-Think of JavaScript packages like gems in Ruby. If you have Node.js installed on your computer then you also have `npm`. This is a package manager originally created for Node.js but is now used throughout the JavaScript community in all projects.
-
-We use `npm init` to create a new confguration file name `package.json` that saves all of our project information.
-
-```
-cd student-app
-npm init
-
-//Continue to hit the enter key until it is done. This creates our file with all the defaults.
-```
-
-Now we have our `package.json` file we can install a JavaScript package via `npm`.
-
-```
-npm install forever --save-dev
-```
-
-*Important - you should never sudo to install npm packages locally to a project.*
-
-This command does two things, first it saves our third party packages into a directory called node_modules and secondly it automatically modifies our package.json file to keep track of our project dependencies. In this case we have specified that `forever` is a development dependency only, and we don't want it to be part of our production environment. 
-
-You might see a lot of documentation that says you need to include the `--save` or `-s` flag to `npm install` to save dependencies, but this is done by default as of `npm 5.0`.
-
-One of the great things about `npm` is that we only need to keep track of our `package.json` file in our repo. We can install all of a projects dependencies simply by running **npm install**.
-
-*Delete the node_modules directory and then run npm install. Notice how it recreated the directory and installed all of the dependencies from our package.json file (in this case it was only forever).*
-
-
-Now lets run `forever`.
-
-```
-./node_modules/.bin/forever -c "node" app.js
-```
-
-Now if we encounter an error `forever` will restart our web server.
-
-*Test this out using Postman.*
-
-## Automatic restart with nodemon
-
-Another package we can take advantage of is `nodemon`. Nodemon is tool that watches for changes to any of our Node files and restarts the server when a change is made. This will save us from having to start and stop the server manually all the time. Lets install it.
-
-```
-npm i nodemon --save-dev
-```
-*npm i is shorthand for npm install*
-
-Now normally we would run `nodemon` by calling the `nodemon` command and the name of our script but we want `forever` to run too. So instead we can get both of these running by doing this.
-
-```
-./node_modules/.bin/forever -c "nodemon —exitcrash -L" app.js
-```
-
-And there we go now we have the best of both worlds. But looking at this kinda gives me a headache so lets turn this into a much simpler command by adding it as an `npm script`.
-
-We can as many scripts as we want to our `package.json` to create aliases for commands. We just give the script a name (the alias), and specify the command, like we do here for `node-server` to start our server app using `nodemon` and `forever`:
-
-package.json
-
-```javascript
-{
-    "name": "app",
-    "version": "1.0.0",
-    "description": "",
-    "main": "app.js",
-    "scripts": {
-        "test": "echo \"Error: no test specified\" && exit 1",
-        "node-server": "forever -c \"nodemon --exitcrash -L\" app.js"
-    },
-    "author": "",
-    "license": "ISC",
-    "devDependencies": {
-        "nodemon": "^1.18.6”,
-        "forever": "^0.15.3"
-    }
-}
-```
-
-Now all we have to do to get our web server running is to type this command.
-
-```
-npm run node-server
-```
-
 ## Express.js
 
 Ok lets get back to finishing up the functionality of our web server. If we take a look at how it stands now its isn’t too bad but lets think about how this might all go wrong.
@@ -409,23 +95,33 @@ Look at how clean express has made our code! Also we did not have to handle the 
 
 To put it simply middleware is code that runs in the ‘middle’. Now this can get a little confusing because we can run our middleware really at any point. If we take a look at our code as it stands right now all the code is synchronous meaning the application is going to read in order so if want to add in some middleware before or after the routes we can literally place that code before or after all of the route calls using **app.use()**.
 
-A commonly used middleware and one we are going to need to complete our POST route is **body-parser**. Lets log out the req in our POST route and in that request lets send through the name of a new student we would like to add using Postman.
+A commonly used middleware and one we are going to need to complete our POST route is **body-parser**. Lets log out the req in our POST route. Using Postman we'll send through the name of a new student we would like to add using Postman.
 
 express.js
 
 ```javascript
 app.post("/students", (req, res) => {
     console.log(req);
-    res.send("Hello World!");
+    res.send(req.body);
 });
 ```
+---
+
+### Sending data through Postman
+We can send JSON data through Postman to our APIs. To do this, we specify a body to our request, with a type of JSON:
+![postman post settings](img/postman-post-body-settings.png)
+
+In the text area provided in Postman, we can specify some strigified JSON. We will use a property 'name' to identify the student name we are sending:
+![postman body example](img/postman-body-content.png)
 
 If we search through the output in the terminal window there is no property holding the name we sent through to add a student. That is because at the moment the body information of the request is in the form of a stream. Now if we really wanted to we could convert this stream to actual usable data ourselves but with express’ concept of middleware we don’t have to!
+
+---
 
 Lets install the body-parser middleware.
 
 ```
-npm install body-parser --save
+npm i body-parser
 ```
 
 Now lets import this module into our code use it.
@@ -439,66 +135,111 @@ const bodyParser = require('body-parser');
 const app = express();
 const port = 3000;
 
-const students = ["Natasha", "Shakti", "Santosh", "Allen", "James", "Blake"];
-
-// parse application/x-www-form-urlencoded
-app.use(bodyParser.urlencoded({ extended: false }));
-
 // parse application/json
 app.use(bodyParser.json());
 
+// Initial data in students array
+const students = ["Natasha", "Shakti", "Santosh", "Allen", "James", "Blake"];
+
 app.get("/", (req, res) => {
+    // Send "Hello world!" to the client
     res.send("Hello World!");
 });
 
 app.get("/students", (req, res) => {
+    // Send the list of students to the client
     res.send(students);
-});
-
-app.post("/students", (req, res) => {
-    console.log(req.body);
-    res.send("Hello World!");
 });
 
 app.listen(port, () => console.log(`Example app listening on port ${port}!`));
 ```
 
-Now we can parse data coming into our server as either json or form-urlencoded. This middleware parses the data and saves it to the request as a body property, which we can now view using req.body. Notice how this middleware had to be defined before the routes because we need it to run before we access the request object on any particular route. If we defined this middleware after the routes it would not have ran in time.
+Now we can parse data coming into our server as json. 
+
+This middleware parses the data and saves it to the request as a body property, which we can now view using req.body. Notice how this middleware had to be defined before the routes because we need it to run before we access the request object on any particular route. If we defined this middleware after the routes it would not have run in time.
+
+---
+### Using body-parser to parse form-urlencoded content
+If we expect form-urlencoded content from the client, we would also include this middleware from body-parser:
+```javascript
+// parse application/x-www-form-urlencoded
+app.use(bodyParser.urlencoded());
+```
+---
+
+Let's log the req.body so we can see what's there:
+
+```javascript
+app.post("/students", (req, res) => {
+    console.log(req.body);
+    res.send("Hello world!");
+});
+```
 
 Lets use this data now to complete the functionality for our /student POST route.
-
-*Have the students take the name from the req.body property and add it the end of the students array. The route should respond with a 201 status and the modified array.*
 
 express.js
 
 ```javascript
+// Take the name from the req.body property and add it the end of the students array. 
+//The route should respond with a 201 status and the modified array
 app.post("/students", (req, res) => {
     students.push(req.body.name);
-    res.status(201).send(students);
+    res.status(201);
+    res.send(students);
 });
 ```
 
+Note that we use the `status` method on the result to send the status code. We send the data back with the `send` method.
+
+## Defining our own middleware
 One more note about middleware before we move on is that we can define it for a specific route as well. Lets add some custom middleware to our /students POST route that will always log the req.body.
 
 express.js
 
 ```javascript
-app.post(
-    "/students",
-    (req, res, next) => {
-        console.log(req.body);
-        next();
-    }, 
+// Custom logging middleware
+function logReqBody(req, res, next) {
+    console.log(req.body);
+    next();
+}
+app.post("/students", logReqBody, 
     (req, res) => {
         students.push(req.body.name);
-        res.status(201).send(students);
+        res.status(201)
+        res.send(students);
     }
 );
 ```
 
-We now have our custom middleware defined only on the /students POST route. The big difference you may have noticed is that there is a next argument. This method must be called for the code to move onto the next piece of logic in the chain. If you do not call next() then your code will never move on from the middleware. If we ever need to throw an argument from middleware we simply give it as an argument to the next() method **(next(new Error("my error")).**
+We define the middleware function `logReqBody`, which just logs the req.body. 
 
-**JavaScript Templating Engines**
+Now we can include that middleware function where we like, such as for the `post /students` route as shown above. To include it, we just pass it as an argument before the callback function that executes on the request.
+
+We can use as many middleware functions as we like in this way, just chaining them one after the other in a comma-separated list, in the order we want them to be executed. 
+
+### Using next() in middleware functions
+
+If we want to execute multiple functions (middleware) before we complete our response to a request, we need to use the `next()` function to indicate to express that we are not done, and the request and response should be passed on to the next function in the response chain. If we ever need to pass an argument from middleware we simply give it as an argument to the next() method.
+
+To demonstrate the syntax, we'll pass a message from our middleware to the response function:
+
+```javascript
+// custom middleware with a message
+function logReqBody(req, res, next) {
+  console.log(req.body);
+  next("message from middleware");
+}
+
+app.post("/students", logReqBody, (req, res, message) => {
+  console.log(message);
+  students.push(req.body.name);
+  res.status(201)
+  res.send(students);
+});
+```
+
+## JavaScript Templating Engines
 
 Express is unopinionated meaning it doesn’t care which packages you use within its ecosystem and it doesn’t care how you layout your file structure. You must hook everything up for it to work, nothing really comes working right out of the box like we had with Rails magic. Although this can be a good thing since we know exactly how our code is working it can also lead to some confusion about setting up new features inside of express since the developer is the one who needs to wire it all together.
 
@@ -512,7 +253,7 @@ app.get("/", (req, res) => {
 });
 ```
 
-We can see that this sends successfully but if we wanted to do anything more complex we wouldn’t be to. In comes in the power of a templating engine. In this lesson we are going to be using Handlebars as our JavaScript templating engine but there are many different ones out there that express supports.
+We can see that this sends successfully but if we wanted to do anything more complex we wouldn’t be able to. In comes in the power of a templating engine. In this lesson we are going to be using Handlebars as our JavaScript templating engine but there are many different ones out there that express supports.
 
 https://github.com/expressjs/express/wiki#template-engines
 
@@ -521,7 +262,7 @@ Lets install the express-handlebars view engine
 https://github.com/ericf/express-handlebars
 
 ```
-npm install express-handlebars --save
+npm i express-handlebars
 ```
 
 According to the express-handlebars documentation we need to create a new directory called view and place some files within it like so.
