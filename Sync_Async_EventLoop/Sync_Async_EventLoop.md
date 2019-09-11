@@ -294,5 +294,5 @@ We'll look at Promises in the next lesson, and see how we can use them to escape
 
 ### Code challenge
 
-Let's go for the code challenge to practice a project with an asynchronous functions in `code/Asynchronous JavaScript`.
+Let's go for the code challenge to practice a project with an asynchronous functions in `js challenges`.
 
