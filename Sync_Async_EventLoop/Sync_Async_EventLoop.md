@@ -292,3 +292,7 @@ This is much better, but javascript gives us something even better - Promises.
 
 We'll look at Promises in the next lesson, and see how we can use them to escape callback hell without recursion.
 
+### Code challenge
+
+Let's go for the code challenge to practice a project with an asynchronous functions in `js challenges`.
+
