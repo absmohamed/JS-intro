@@ -3,6 +3,7 @@
 - [Node.js](#nodejs)
 	- [Requirements](#requirements)
 	- [References](#references)
+	- [Node.js](#nodejs-1)
 	- [Node.js Web Server](#nodejs-web-server)
 	- [Using Postman](#using-postman)
 	- [The request](#the-request)
@@ -30,6 +31,18 @@
 - [express js](https://expressjs.com/)
 - [body-parser](https://www.npmjs.com/package/body-parser)
 - [anatomy of an http transaction](https://nodejs.org/es/docs/guides/anatomy-of-an-http-transaction/)
+
+## Node.js
+
+So what exactly is Node.js?
+
+JavaScript has been used mainly for client-side scripting inside **< script >** tags executing in web browsers. This limitation meant that developers were often working in many different languages and frameworks between the front-end (client-side) and backend (server-side) aspects of a web application.  
+
+Although there were other projects to bring JavaScript to server-side applications, the functionality took off with the launch of Node.js
+
+Node allows developers to write JavaScript code that runs directly in a computer process itself instead of in a browser. Node can, therefore, be used to write server-side applications with access to the operating system, file system, and everything else required to build fully-functional applications.
+
+In a nutshell Node.js allows JavaScript to be run on the machine and not just in a browser which opens up a world of possibilities.
 
 ## Node.js Web Server
 
