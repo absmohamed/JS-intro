@@ -31,8 +31,7 @@ const serverResponse = (req, res) => {
       case '/':
         console.log('matching students');
         res.setHeader('Content-Type', 'text/plain');
-        let match = randomPair();
-        res.end(match);
+        res.end(randomPair());
         break;
       case '/students':
         console.log('getting students');

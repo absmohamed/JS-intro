@@ -1,22 +1,25 @@
 # Node.js
 
 - [Node.js](#nodejs)
-  - [Requirements](#requirements)
-  - [References](#references)
-  - [Node.js Web Server](#nodejs-web-server)
-  - [Using Postman](#using-postman)
-  - [The request](#the-request)
-  - [Basic routing](#basic-routing)
-    - [Listing students - the /students route (GET)](#listing-students---the-students-route-get)
-    - [Invalid route handling](#invalid-route-handling)
-  - [NPM init, node_modules, and package.json](#npm-init-nodemodules-and-packagejson)
-  - [Restarting after errors with Forever](#restarting-after-errors-with-forever)
-    - [Forever](#forever)
-    - [Maintaining a node project in GitHub](#maintaining-a-node-project-in-github)
-  - [Automatic restart with nodemon](#automatic-restart-with-nodemon)
-  - [Implementing the POST route handling](#implementing-the-post-route-handling)
-  - [Implement random student pairing for GET on '/'](#implement-random-student-pairing-for-get-on)
-  - [Challenge](#challenge)
+	- [Requirements](#requirements)
+	- [References](#references)
+	- [Node.js Web Server](#nodejs-web-server)
+	- [Using Postman](#using-postman)
+	- [The request](#the-request)
+	- [Basic routing](#basic-routing)
+		- [Listing students - the /students route (GET)](#listing-students---the-students-route-get)
+		- [Invalid route handling](#invalid-route-handling)
+	- [NPM init, node_modules, and package.json](#npm-init-nodemodules-and-packagejson)
+	- [Restarting after errors with Forever](#restarting-after-errors-with-forever)
+		- [Forever](#forever)
+		- [Maintaining a node project in GitHub](#maintaining-a-node-project-in-github)
+	- [Automatic restart with nodemon](#automatic-restart-with-nodemon)
+	- [Implementing the POST route handling](#implementing-the-post-route-handling)
+		- [Sending data through Postman](#sending-data-through-postman)
+		- [Adding the POST route handling](#adding-the-post-route-handling)
+		- [Processing the POST data](#processing-the-post-data)
+	- [Implement random student pairing for GET on '/'](#implement-random-student-pairing-for-get-on)
+	- [Challenge](#challenge)
 
 ## Requirements
 
@@ -388,6 +391,18 @@ npm run node-server
 ```
 
 ## Implementing the POST route handling
+Now we'll implement the POST route. The easiest way to test POST route handling in a web server is using Postman.
+
+### Sending data through Postman
+We can send JSON data through Postman to our APIs. To do this, we specify a body to our request, with a type of JSON:
+![postman post settings](img/postman-post-body-settings.png)
+
+In the text area provided in Postman, we can specify some strigified JSON. We will use a property 'name' to identify the student name we are sending:
+![postman body example](img/postman-body-content.png)
+
+If we search through the output in the terminal window there is no property holding the name we sent through to add a student. That is because at the moment the body information of the request is in the form of a stream. We'll have to handle this stream data if we're using the http module. We'll see an easier way to do this in the next lesson with express.js.
+
+### Adding the POST route handling
 
 Let's add another if block to handle a POST method on '/students':
 
@@ -399,9 +414,10 @@ if (method === "POST" && url === "/students") {
 }
 ```
 
+### Processing the POST data
 When we POST a new student to our server, we need to process the data sent in the request. The request object passed in the connection callback is a **stream**.
 
-If we want to process the request body content with Node.js, we must listen to a **data** event on the request when a data stream is received, and also for an **end** event when the request is complete. The data stream is received in chunks, so we have to process those chunks.
+In order to process the request body content with Node.js, we must listen to a **data** event on the request when a data stream is received, and also for an **end** event when the request is complete. The data stream is received in chunks, so we have to process those chunks.
 
 We first get the data by listening to the stream data events, and when the data ends, the stream end event is called. This also goes inside of our callback function `serverResponse`. We can put it below our route handling code:
 
