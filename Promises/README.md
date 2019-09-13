@@ -27,7 +27,7 @@ Let's look at the lifecycle of a Promise:
 Here is how we could implement a call to our dad joke API by creating and returning a Promise:
 
 ```javascript
-function asyncGetJoke() {
+function getJoke() {
 	return new Promise(function getDadJoke(resolve, reject) {
 		$.getJSON("https://icanhazdadjoke.com/", dadJoke => {
 			if (dadJoke) resolve(dadJoke.joke)
@@ -37,7 +37,7 @@ function asyncGetJoke() {
 }
 ```
 
-It's a good practice to name an asynchronous function appropriately. This function does not return a value to be used in synchronous program flow. _It returns a Promise_.
+This function does not return a value to be used in synchronous program flow. _It returns a Promise_.
 
 If we trying calling our function and log the result, we will see a pending Promise. Let's try.
 
@@ -56,7 +56,7 @@ If we trying calling our function and log the result, we will see a pending Prom
 		<button id="button">Get Jokes</button>
 		<div id="jokes"></div>
 		<script>
-			function asyncGetJoke() {
+			function getJoke() {
 				return new Promise(function(resolve, reject) {
 					$.getJSON("https://icanhazdadjoke.com/", dadJoke => {
 						if (dadJoke) resolve(dadJoke.joke)
@@ -64,7 +64,7 @@ If we trying calling our function and log the result, we will see a pending Prom
 					})
 				})
 			}
-			let promise = asyncGetJoke()
+			let promise = getJoke()
 			console.log(promise)
 		</script>
 	</body>
@@ -94,14 +94,14 @@ Now we can see the joke returned by the API call gets logged!
 
 In the last lesson when we saw that a chain of asynchronous function calls can lead to callback hell, we were asked to call the joke API 5 times, store the jokes in an array, then log the array. How can we do that with Promises?
 
-Let's create another function called compileJokes that isn't recursive, and instead uses a loop and our asyncGetJoke method that returns a Promise:
+Let's create another function called compileJokes that isn't recursive, and instead uses a loop and our getJoke method that returns a Promise:
 
 ```javascript
 // compile some number(num) of jokes in an array
 function compileJokes(num, callback) {
 	let jokes = []
 	for (let i = 0; i <= num; i++) {
-		asyncGetJoke().then(dadJoke => {
+		getJoke().then(dadJoke => {
 			jokes.push(dadJoke)
 			if (i == 5) callback(jokes)
 		})
@@ -188,7 +188,7 @@ Adding error handling to our example is quite simple:
 function compileJokes(num, callback) {
 	let jokes = []
 	for (let i = 0; i <= num; i++) {
-		asyncGetJoke()
+		getJoke()
 			.then(dadJoke => {
 				jokes.push(dadJoke)
 				if (i == 5) callback(jokes)
@@ -205,7 +205,7 @@ Now if the Promise results in a rejection, the error will be logged instead of t
 We'll modify the Promise creation to reject:
 
 ```javascript
-function asyncGetJoke() {
+function getJoke() {
 	return new Promise(function(resolve, reject) {
 		$.getJSON("https://icanhazdadjoke.com/", dadJoke => {
 			if (!dadJoke) resolve(dadJoke.joke)
@@ -254,7 +254,7 @@ Age: 32
 
 To do this, you should:
 
-- implement an asynchronous function that returns a promise, and that calls the API (like asyncGetJoke in our lesson example)
+- implement an asynchronous function that returns a promise, and that calls the API (like getJoke in our lesson example)
 - implement a callback function that will be passed to the `.then` method of the promise that is returned, which will console log the results as indicated
 - call the asynchronous function and pass the callback function you defined to the `.then` method
 
@@ -266,7 +266,7 @@ Alter your asynchronous function to call the random user api and request 10 resu
 
 Console log the details for each of the 10 random users in your modified callback function that is passed to the `.then` method.
 
-Note that this is unlike our lesson example where we made multiple calls to the asyncGetJoke function to get multiple dad jokes. This will be a bit simpler.
+Note that this is unlike our lesson example where we made multiple calls to the getJoke function to get multiple dad jokes. This will be a bit simpler.
 
 ### Part 3 Add DOM manipulation to display results on the page
 
