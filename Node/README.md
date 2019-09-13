@@ -28,9 +28,9 @@
 
 ## References
 
-- [express js](https://expressjs.com/)
-- [body-parser](https://www.npmjs.com/package/body-parser)
+- [node.js](https://nodejs.org/en/docs/)
 - [anatomy of an http transaction](https://nodejs.org/es/docs/guides/anatomy-of-an-http-transaction/)
+- [Postman](https://www.getpostman.com/)
 
 ## Node.js
 
