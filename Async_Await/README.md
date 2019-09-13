@@ -1,5 +1,17 @@
 # Async/Await
 
+- [Async/Await](#asyncawait)
+  - [References](#references)
+  - [Async function](#async-function)
+  - [Error handling](#error-handling)
+  - [Challenge](#challenge)
+
+## References
+
+[MDN async function](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Statements/async_function)
+
+## Async function
+
 Async/await provides a bit of syntatic sugar for our promises, and makes our asynchronous code appear to be more synchronous. It can make our code easier to read.
 
 Let's use the dad joke example.
@@ -109,3 +121,7 @@ function clickCallback() {
 ```
 
 With the `.catch` here, if any of our calls to getJoke reject, we'll handle it.
+
+## Challenge
+
+Redo the challenge from [the promise lesson](../Promises/README.md) to use async/await. Use Promise.all to make your asynchronous calls to the random user api run in parallel.
