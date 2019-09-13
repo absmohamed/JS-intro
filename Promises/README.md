@@ -1,14 +1,17 @@
 # Promises
 
 - [Promises](#promises)
-  - [Creating a Promise](#creating-a-promise)
-  - [Resolving a Promise](#resolving-a-promise)
-  - [Implementing our 5 joke array with Promises](#implementing-our-5-joke-array-with-promises)
-  - [Adding DOM manipulation to the callback](#adding-dom-manipulation-to-the-callback)
-    - [Defining the callback function](#defining-the-callback-function)
-  - [Error handling and Promises](#error-handling-and-promises)
-    - [Add error handling](#add-error-handling)
-  - [Challenge](#challenge)
+	- [Creating a Promise](#creating-a-promise)
+	- [Resolving a Promise](#resolving-a-promise)
+	- [Implementing our 5 joke array with Promises](#implementing-our-5-joke-array-with-promises)
+	- [Adding DOM manipulation to the callback](#adding-dom-manipulation-to-the-callback)
+		- [Defining the callback function](#defining-the-callback-function)
+	- [Error handling and Promises](#error-handling-and-promises)
+		- [Add error handling](#add-error-handling)
+	- [Challenge](#challenge)
+		- [Part 1 Using a promise](#part-1-using-a-promise)
+		- [Part 2 Return multiple users](#part-2-return-multiple-users)
+		- [Part 3 Add DOM manipulation to display results on the page](#part-3-add-dom-manipulation-to-display-results-on-the-page)
 
 Promises are a lot like what they sound like. They are a placeholder for a return value from an asychnonous function. They promise to resolve with either a result or an error.
 
@@ -169,7 +172,7 @@ document.querySelector("#button").addEventListener("click", () => {
 })
 ```
 
-Now we have three functions defined. Instead of keeping them inline in our html file, let's put them in their own script, and include a referene to the script at the bottom of the body. This is done in `code/promises.html` and `code/promises.js`.
+Now we have three functions defined. Instead of keeping them inline in our html file, let's put them in their own script, and include a reference to the script at the bottom of the body. This is done in `code/promises.html` and `code/promises.js`.
 
 ## Error handling and Promises
 
@@ -220,3 +223,53 @@ Remove the `.catch` and leave in the forced reject, and you'll see there is an u
 This is why it is important to handle rejected Promises.
 
 ## Challenge
+
+In the **challenge** folder, there is an `index.html` and a `script.js`.
+
+Currently in the `script.js`, there is a call to a random user API that uses a callback function to console.log the result of the response, or an error message if there is a problem.
+
+**Step 1:** Open the index.html in a browser, and look at what is logged to the console.
+
+**Step 2:** Make the following change to the definition of the `randomsUrl`, which will cause the API to return 10 random users:
+
+```const randomsUrl = 'https://randomuser.me/api/?results=10';
+
+```
+
+Refresh `index.html` and look at the results that are logged.
+
+Now that you have an understanding of what is returned by this API, here is your challenge!
+
+### Part 1 Using a promise
+
+Modify the script.js to use a promise instead of just a callback. Look at what we did in class for the dad jokes example and see if you can do the same to:
+
+1. Get **one random user** and return their details in a JSON object. Console log those details like this example:
+
+```
+Name: Mrs Sally Ride
+Email: sally.ride@example.com
+Age: 32
+```
+
+To do this, you should:
+
+- implement an asynchronous function that returns a promise, and that calls the API (like asyncGetJoke in our lesson example)
+- implement a callback function that will be passed to the `.then` method of the promise that is returned, which will console log the results as indicated
+- call the asynchronous function and pass the callback function you defined to the `.then` method
+
+Take 30 minutes to try to implement this part of the challenge, then we will look at it together.
+
+### Part 2 Return multiple users
+
+Alter your asynchronous function to call the random user api and request 10 results. It should return the array of results when the promise resolves.
+
+Console log the details for each of the 10 random users in your modified callback function that is passed to the `.then` method.
+
+Note that this is unlike our lesson example where we made multiple calls to the asyncGetJoke function to get multiple dad jokes. This will be a bit simpler.
+
+### Part 3 Add DOM manipulation to display results on the page
+
+**A.** Modify the callback function to display the results on the web page in addition to logging the results. When the page loads, it should display the details for 10 random users.
+
+**B.** Add a button to the page that will refresh the page with 10 new random users when clicked.

@@ -10,32 +10,7 @@
   <button id="button">Get Jokes</button>
   <div id="jokes"></div>
   <script>
-    function asyncGetJoke() {
-      return new Promise(function (resolve, reject) {
-        $.getJSON("https://icanhazdadjoke.com/", (dadJoke) => {
-          if (dadJoke) resolve(dadJoke.joke);
-          else reject("Error getting joke");
-        });
-      });
-    }
 
-    function compileJokes(num, callback, arr = []) {
-      let url = "https://icanhazdadjoke.com/";
-      $.getJSON(url, (dadJoke) => {
-        arr.push(dadJoke.joke);
-        if (num === arr.length) {
-          return callback(arr);
-        }
-        return compileJokes(num, callback, arr);
-      });
-    }
-
-
-    document.querySelector("#button").addEventListener("click", () => {
-      compileJokes(5, (data) => {
-        console.log(data);
-      });
-    });
   </script>
 </body>
 

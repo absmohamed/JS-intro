@@ -3,7 +3,7 @@
 function asyncGetJoke() {
   return new Promise(function (resolve, reject) {
     $.getJSON("https://icanhazdadjoke.com/", (dadJoke) => {
-      if (!dadJoke) resolve(dadJoke.joke);
+      if (dadJoke) resolve(dadJoke.joke);
       else reject("Error getting joke");
     });
   });
