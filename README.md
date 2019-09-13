@@ -30,3 +30,25 @@ Each day there will be a new directory added with the code snippets used for the
 
 - object constructors
 - classes
+
+## Day 7
+
+- classes(cont.)
+- [the DOM and event listeners](Dom_EventListeners/README.md)
+
+## Day 8
+
+- [DOM Manipulation](DOM_Manipulation/README.md)
+
+## Day 9
+
+- [Web storage]
+- [JSON](JSON/README.md)
+
+## Day 10
+
+- [Asynchronous JS](Sync_Async_EventLoop/README.md)
+
+## Day 11
+
+- [Promises](Promises/README.md)

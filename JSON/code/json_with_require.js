@@ -1,4 +1,5 @@
 const jsonObj = require('./json_example.json');
+const fs = require('fs');
 
 // Log the group name
 let groupName = getGroupName(jsonObj);
@@ -52,6 +53,12 @@ function addActivity(member, activity) {
 }
 
 // Store the modified object back to the json file
-function storeObject(group) {
-
+function storeObject(jsonObj) {
+  fs.writeFile('json_example.json', JSON.stringify(jsonObj), (err) => {
+    if (err) {
+      console.error("error occured writing json file")
+    } else {
+      console.log("Updated json file")
+    }
+  })
 }
