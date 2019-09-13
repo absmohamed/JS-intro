@@ -52,3 +52,4 @@ Each day there will be a new directory added with the code snippets used for the
 ## Day 11
 
 - [Promises](Promises/README.md)
+- [Async/Await](Async_Await/README.md)
