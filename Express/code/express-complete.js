@@ -4,7 +4,13 @@ const bodyParser = require("body-parser");
 const app = express();
 const port = 3000;
 
-const students = ["Natasha", "Shakti", "Santosh", "Allen", "James", "Blake"];
+function randomPair() {
+  let s1Ind = Math.floor(Math.random() * students.length);
+  let s2Ind = Math.floor(Math.random() * students.length);
+  return `${students[s1Ind]} ${students[s2Ind]}`;
+}
+
+let students = ["Natasha", "Shakti", "Santosh", "Allen", "James", "Blake"];
 
 // custom middleware with a message
 function logReqBody(req, res, next) {
@@ -17,7 +23,7 @@ app.use(bodyParser.json());
 
 
 app.get("/", (req, res) => {
-  res.send("Hello World!");
+  res.send(randomPair());
 });
 
 app.get("/students", (req, res) => {
