@@ -287,12 +287,9 @@ We'll add a default case to our GET block that catches invalid routes:
 app.js
 
 ```javascript
-else if (req.url === "/favicon.ico") {
-    console.log("We don’t have a favicon");
-} else {
-    console.log("could not find the route");
-    throw "Route not found";
-}
+default:
+	console.log('invalid route');
+	throw('Route not found');
 ```
 
 Ok so everything is still fine if we go to /students buts lets take a look at if we go to route that doesn’t exist such as /class. We see an error in the console but…….oh no it looks like our node program has exited and the web server is now completely shut down.
