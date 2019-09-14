@@ -488,8 +488,10 @@ Try to do this yourself before you look at the completed code in the `app_comple
 
 ## Challenge
 
-Implement persistence in a file on the server. Use a .json file to store the list of students.
+Implement persistence in a file on the server. Use a text file to store the list of students.
 
 1. Read from the file in your server to populate the array of students.
-2. Every time a student is added, update the .json file along with the array in memory to store the new student.
+2. Every time a student is added, update the .txt file along with the array in memory to store the new student.
 3. Verify that now, even if you stop and restart the server, your student list is updated.
+
+*Hint* You can use fs.readFileSync to read in the contents of the file, split on '\n', and store in an array. You can use fs.writeFileSync with join on '\n' to write back the updated array.
