@@ -25,42 +25,39 @@ const serverResponse = (req, res) => {
   } = req;
 
 
-  // handle the GET requests
-  if (method === 'GET') {
-    switch (url) {
-      case '/':
-        console.log('matching students');
-        res.setHeader('Content-Type', 'text/plain');
-        res.end(randomPair());
-        break;
-      case '/students':
-        console.log('getting students');
-        res.setHeader('Content-Type', 'application/json');
-        res.end(JSON.stringify(students));
-        break;
-      default:
-        console.log('invalid route');
-        res.statusCode = 404;
-        res.setHeader('Content-Type', 'text/plain');
-        res.end('Invalid route');
-    }
-  }
-
-  // Handle the post request
-  if (method === 'POST' && url === '/students') {
-    console.log('received a POST request');
-    res.setHeader('Content-Type', 'application/json');
+  // handle the routes
+  if (method === 'GET' && url === '/') {
+    // Get request on '/'
+    console.log('Getting a random pair of students');
+    res.setHeader('Content-type', 'text/plain');
+    res.end(randomPair());
+  } else if (method === 'GET' && url === '/students') {
+    // Get request on '/students'
+    console.log("Getting a list of students");
+    res.setHeader('Content-type', 'application/json');
+    res.end(JSON.stringify(students));
+  } else if (method === 'POST' && url === '/students') {
+    // Post request on '/students'
+    console.log('Got a POST request on /students');
+    res.setHeader('Content-type', 'applicaton/json');
+  } else {
+    // Invalid method or url
+    console.log('Got an invalid method or route');
+    res.statusCode = 404;
+    res.setHeader('Content-type', 'text/plain');
+    res.end('Route not found');
   }
 
   // Handle getting data from the client request (on POST)
   let data = []; // Used to collect chunks of data
   req.on('data', chunk => {
     // This event fires when we receive data in the request. The data comes in chunks
-    console.log(`Data chunk available: ${chunk}`);
-    // We need to parse the chunk, or we will store it as a stream object
-    data.push(JSON.parse(chunk));
-    // See what it looks like when we store it as a stream object in our array of data
-    // data.push(chunk);
+    // Only handle when we have the expected url
+    if (url === '/students') {
+      console.log(`Data chunk available: ${chunk}`);
+      // We need to parse the chunk, or we will store it as a stream object
+      data.push(JSON.parse(chunk));
+    }
   });
   req.on('end', () => {
     // The end event signifies the end of the request, and therfore the end of the data stream 
@@ -70,9 +67,10 @@ const serverResponse = (req, res) => {
     if (data.length > 0) {
       console.log('retrieved data', data[0]);
       students.push(data[0].name);
+      // Send the updated list of students in the response with a 201 status
+      res.statusCode = 201;
+      res.end(JSON.stringify(students));
     }
-    // Send the updated list of students in the response
-    res.end(JSON.stringify(students));
   });
 }
 

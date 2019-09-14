@@ -209,13 +209,9 @@ function serverResponse(req, res) {
 	// This is where we'll define our callback function for the server
 	const { method, url, headers } = req
 
-	if (method === "GET") {
-		switch (url) {
-			case "/":
-				res.setHeader("Content-Type", "text/plain")
-				res.end("Matching students")
-				break
-		}
+	if (method === "GET" && url === '/') {
+		res.setHeader("Content-Type", "text/plain")
+		res.end("Matching students")
 	}
 }
 const server = http.createServer(serverResponse)
@@ -262,18 +258,14 @@ We could use text or json - our data is stored in an array. We'll use json, so i
 app.js
 
 ```javascript
-if (method === "GET") {
-	switch (url) {
-		case "/":
-			res.setHeader("Content-Type", "text/plain")
-			res.end("Matching students")
-			break
-		case "/students":
-			res.setHeader("Content-Type", "application/json")
-			res.end(JSON.stringify(students))
-			break
+	if (method === "GET" && url === '/') {
+		res.setHeader("Content-Type", "text/plain")
+		res.end("Matching students")
+	} else if (method === 'GET' && url === '/students') {
+    console.log("Getting a list of students");
+    res.setHeader('Content-type', 'application/json');
+		res.end(JSON.stringify(students));
 	}
-}
 ```
 
 After restarting the server and visiting localhost:3000/students we should see our student array. Lets now handle the functionality for when somewhen visits a route that doesn’t exist.
@@ -287,9 +279,17 @@ We'll add a default case to our GET block that catches invalid routes:
 app.js
 
 ```javascript
-default:
-	console.log('invalid route');
-	throw('Route not found');
+	if (method === "GET" && url === '/') {
+		res.setHeader("Content-Type", "text/plain")
+		res.end("Matching students")
+	} else if (method === 'GET' && url === '/students') {
+    console.log("Getting a list of students");
+    res.setHeader('Content-type', 'application/json');
+		res.end(JSON.stringify(students));
+	} else {
+		console.log('invalid route');
+		throw('Route not found');
+	}
 ```
 
 Ok so everything is still fine if we go to /students buts lets take a look at if we go to route that doesn’t exist such as /class. We see an error in the console but…….oh no it looks like our node program has exited and the web server is now completely shut down.
@@ -417,11 +417,25 @@ If we search through the output in the terminal window there is no property hold
 Let's add another if block to handle a POST method on '/students':
 
 ```javascript
-// Handle the post request
-if (method === "POST" && url === "/students") {
-	console.log("received a POST request")
-	res.setHeader("Content-Type", "application/json")
-}
+	if (method === "GET" && url === '/') {
+		// Get request on '/'
+		res.setHeader("Content-Type", "text/plain")
+		res.end("Matching students")
+	} else if (method === 'GET' && url === '/students') {
+		// Get request on '/students'
+    console.log("Getting a list of students");
+    res.setHeader('Content-type', 'application/json');
+		res.end(JSON.stringify(students));
+	} else if (method === "POST" && url === "/students") {
+		// Post request on '/students'
+		console.log("received a POST request")
+		res.setHeader("Content-Type", "application/json")
+		// Handle data in data and end events on req
+	} else {
+		// Invalid method or url
+		console.log('invalid route');
+		throw('Route not found');
+	}
 ```
 
 ### Processing the POST data
@@ -435,12 +449,13 @@ We first get the data by listening to the stream data events, and when the data 
 // Handle getting data from the client request (on POST)
 let data = [] // Used to collect chunks of data
 req.on("data", chunk => {
-	// This event fires when we receive data in the request. The data comes in chunks
-	console.log(`Data chunk available: ${chunk}`)
-	// We need to parse the chunk, or we will store it as a stream object
-	data.push(JSON.parse(chunk))
-	// If you're curious, comment out the line above, and uncomment the following line, to see what it looks like when we store it as a stream object in our array of data
-	// data.push(chunk);
+	// Make sure data was sent on the right url
+	if(url === '/students') {
+		// This event fires when we receive data in the request. The data comes in chunks
+		console.log(`Data chunk available: ${chunk}`)
+		// We need to parse the chunk, or we will store it as a stream object
+		data.push(JSON.parse(chunk))
+	}
 })
 req.on("end", () => {
 	// The end event signifies the end of the request, and therfore the end of the data stream
@@ -450,9 +465,11 @@ req.on("end", () => {
 	if (data.length > 0) {
 		console.log("retrieved data", data[0])
 		students.push(data[0].name)
+		// Send the stringified list of students we've constructed according to the route and method
+		res.statusCode = 201
+		res.end(JSON.stringify(students))
 	}
-	// Send the stringified list of students we've constructed according to the route and method
-	res.end(JSON.stringify(students))
+
 })
 ```
 
