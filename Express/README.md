@@ -511,7 +511,8 @@ script.js
 ```javascript
 function postNewStudent(event) {
   event.preventDefault();
-  let student = event.target.elements[0].value;
+  let textField = event.target.elements[0];
+  let student = textField.value;
   console.log("student", student)
 }
 ```
@@ -553,6 +554,8 @@ script.js
       console.log("There was a problem on the server:", response.status);
     }
     console.log("Added student");
+    // Clear the text field
+    textField.value = "";
   }).catch((err) => console.log(err));
 ```
 
@@ -593,6 +596,8 @@ script.js
       console.log("There was a problem on the server:", response.status);
     }
     console.log("Added student");
+    // Clear the text field
+    textField.value = "";
     response.json().then(jsonCallback)
   }).catch((err) => console.log(err));
 ```
