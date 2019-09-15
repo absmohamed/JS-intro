@@ -8,6 +8,7 @@ const port = 3000;
 // use cors if we want to play with a client
 app.use(cors());
 
+// File handling for our persisted data
 const fs = require('fs');
 
 const readStudentData = (file) => {
@@ -21,6 +22,16 @@ const persistStudentData = (file, students) => {
   return students;
 };
 
+// Initialise students
+let students = [];
+students = readStudentData('students.txt');
+
+// custom middleware
+function logReqBody(req, res, next) {
+  console.log(req.body);
+  next();
+}
+
 function randomPair(req, res, next) {
   let s1Ind = Math.floor(Math.random() * students.length);
   let s2Ind = Math.floor(Math.random() * students.length);
@@ -30,18 +41,10 @@ function randomPair(req, res, next) {
   next();
 }
 
-let students = [];
-students = readStudentData('students.txt');
-
-// custom middleware with a message
-function logReqBody(req, res, next) {
-  console.log(req.body);
-  next();
-}
-
 // parse application/json
 app.use(bodyParser.json());
 
+// route handling
 app.get("/", randomPair, (req, res) => {
   res.send(req.pair);
 });
