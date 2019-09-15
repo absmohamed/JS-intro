@@ -6,7 +6,7 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "node-server": "forever -c \"nodemon --exitcrash -L\" app.js",
-    "express-server": "forever -c \"nodemon --exitcrash -L\" express.js"
+    "express-server": "forever -c \"nodemon --exitcrash -L\" express-complete.js"
   },
   "author": "",
   "license": "ISC",
