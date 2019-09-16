@@ -1,4 +1,6 @@
-const jsonObj = require('./json_example.json');
+const jsonFile = './json_example.json';
+const jsonObj = require(jsonFile);
+const fs = require('fs');
 
 // Log the group name
 let groupName = getGroupName(jsonObj);
@@ -28,30 +30,49 @@ storeObject(jsonObj);
 
 // Returns the groupName
 function getGroupName(group) {
+  return group.groupName;
 
 }
 
 // Returns the location
 function getLocation(group) {
+  return group.location;
+
 
 }
 
 // Returns the member
 function getMember(group, name) {
+  let members = group.members;
+  for (let member of members) {
+    if (member.name === name) {
+      return member;
+    }
+  }
 
 }
 
 // Returns array of activities for the member
 function getActivities(member) {
+  return member.activities;
 
 }
 
 // Adds an activity to the array of activities for the member
 function addActivity(member, activity) {
+  member.activities.push(activity);
+}
 
+function callbackForWriteFile(err){
+  if (err) {
+    console.error("There was a problem writing the file", err);
+  } else {
+  console.log("Write file successful!");
+  }
 }
 
 // Store the modified object back to the json file
 function storeObject(group) {
-
+  fs.writeFile(jsonFile, JSON.stringify(jsonObj), callbackForWriteFile);
+  console.log("called writeFile");
 }
