@@ -1,5 +1,4 @@
-const jsonFile = './json_example.json';
-const jsonObj = require(jsonFile);
+const jsonObj = require('./json_example.json');
 const fs = require('fs');
 
 // Log the group name
@@ -72,7 +71,12 @@ function callbackForWriteFile(err){
 }
 
 // Store the modified object back to the json file
-function storeObject(group) {
-  fs.writeFile(jsonFile, JSON.stringify(jsonObj), callbackForWriteFile);
-  console.log("called writeFile");
+function storeObject(jsonObj) {
+  fs.writeFile('json_example.json', JSON.stringify(jsonObj), (err) => {
+    if (err) {
+      console.error("error occured writing json file")
+    } else {
+      console.log("Updated json file")
+    }
+  })
 }

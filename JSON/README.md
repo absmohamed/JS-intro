@@ -30,7 +30,7 @@ console.log(jsonObjToStr)
 console.log(typeof jsonObjToStr)
 
 // To convert the string to a JSON Object, we use the parse() method
-let jsonObjNew = JSON.stringify(jsonObjToStr)
+let jsonObjNew = JSON.parse(jsonObjToStr)
 console.log(jsonObjNew)
 console.log(typeof jsonObjNew)
 ```

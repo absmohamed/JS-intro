@@ -10,7 +10,11 @@
   <button id="button">Get Jokes</button>
   <div id="jokes"></div>
   <script>
+    function clickCallback() {
+      console.log("callback function for button")
+    }
 
+    document.querySelector("#button").addEventListener("click", clickCallback);
   </script>
 </body>
 
