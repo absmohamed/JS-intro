@@ -36,15 +36,23 @@ console.log(quotes);
 //get the random number with math random and floor, return the object with the index.
 function getRandomQuote()
 {
+  let randomNum = Math.floor(Math.random()*quotes.length);
+  return quotes[randomNum].quote;
 
 }
-
+console.log(getRandomQuote());
 //displays a new random quote in the HTML paragraph when is called
 function printQuote ()
 {
+  let randomQ = getRandomQuote();
+  const randomParagraph = document.querySelector(".quote"); 
+  // randomParagraph.innerHTML = <p>+randomQ+</p>
+  randomParagraph.textContent = randomQ;
+  // document.getElementById('quote').innerText = getRandomQuote()
   
 }
 
 //Develop a way to show a new random quote every 10 seconds
-
+setInterval(printQuote, 10000);
 //the button need an eventListener...
+document.querySelector("#loadQuote").addEventListener("click", printQuote);
