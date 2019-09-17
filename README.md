@@ -58,10 +58,19 @@ Each day there will be a new directory added with the code snippets used for the
 - AJAX, XHR, Fetch
 
 ## Day 13
-- [Node.js](https://github.com/CoderAcademy-BRI/js-intro-lessons/tree/master/Node)
-  
+- JS Revision
+
 ## Day 14
-- [Express Intro](https://github.com/CoderAcademy-BRI/js-intro-lessons/tree/master/Express)
+- Hackathon
 
 ## Day 15
+- Hackathon
+
+## Day 16
+- [Node.js](https://github.com/CoderAcademy-BRI/js-intro-lessons/tree/master/Node)
+  
+## Day 17
+- [Express Intro](https://github.com/CoderAcademy-BRI/js-intro-lessons/tree/master/Express)
+
+## Day 18
 - [Modularity, CRUD](https://github.com/CoderAcademy-BRI/js-intro-lessons/tree/master/Modularity)
