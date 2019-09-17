@@ -53,3 +53,15 @@ Each day there will be a new directory added with the code snippets used for the
 
 - [Promises](Promises/README.md)
 - [Async/Await](Async_Await/README.md)
+
+## Day 12
+- AJAX, XHR, Fetch
+
+## Day 13
+- [Node.js](https://github.com/CoderAcademy-BRI/js-intro-lessons/tree/master/Node)
+  
+## Day 14
+- [Express Intro](https://github.com/CoderAcademy-BRI/js-intro-lessons/tree/master/Express)
+
+## Day 15
+- [Modularity, CRUD](https://github.com/CoderAcademy-BRI/js-intro-lessons/tree/master/Modularity)
