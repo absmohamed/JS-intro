@@ -1,5 +1,7 @@
 # Modularity
 
+This lesson is not complete. A CRUD application will be developed as part of this lesson.
+
 - [Modularity](#modularity)
   - [Resources](#resources)
   - [Making our server code modular](#making-our-server-code-modular)
