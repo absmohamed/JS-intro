@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>Fetch API to get a JSON object</title>
+    </head>
+    <body>
+        <h1>Fetch API to get a JSON object</h1>
+        <script>
+            //making a new fetch request and pass in the json file name
+            let promise = fetch('json_example.json');
+            promise.then(function(response){
+                return response.json();
+            // .json() is one of the methods that the response object has
+            // it returns a new javascript object and also a promise
+            }).then(function(jsObject){
+                console.log(jsObject);
+                console.log(jsObject.constructor === JSON);
+            }).catch(function(error){
+                console.log("Something went wrong");  // Network error or JSON parsing error
+                console.log(error);
+            });
+        </script>   
+    </body>
+</html>
