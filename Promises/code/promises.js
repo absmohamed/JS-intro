@@ -12,11 +12,11 @@ function getJoke() {
 
 function compileJokes(num, callback) {
   let jokes = [];
-  for (let i = 0; i <= num; i++) {
+  for (let i = 1; i <= num; i++) {
     getJoke()
       .then((dadJoke) => {
         jokes.push(dadJoke);
-        if (i == 5) callback(jokes);
+        if (i == num) callback(jokes);
       });
   }
 }
