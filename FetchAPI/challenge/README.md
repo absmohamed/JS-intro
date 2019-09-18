@@ -13,8 +13,8 @@ You can call the Bored API like this to get a random activity:
 
 ```javascript
 let boredUrl = "http://www.boredapi.com/api/activity/"
-fetch(boredUrl).then(response => response.json()
-  .then(activity => console.log(activity)))
+fetch(boredUrl).then(response => response.json())
+  .then(activity => console.log(activity))
 ```
 
 You can also add query parameters to the url to search for activities based on a number of criteria, one of which is type. Valid types are:
