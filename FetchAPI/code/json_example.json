@@ -1,0 +1,31 @@
+{
+    "groupName": "Save Planet Earth",
+    "location": "Brisbane",
+    "formed": 2019,
+    "members": [
+      {
+        "name": "A",
+        "age": 25,
+        "activities": [
+          "Uses a Keep Cup",
+          "Uses a Cloth Bag"
+        ]
+      },
+      {
+        "name": "B",
+        "age": 39,
+        "activities": [
+          "Has a veggie patch",
+          "Does composting"
+        ]
+      },
+      {
+        "name": "C",
+        "age": 49,
+        "activities": [
+          "Buys groceries in bulk",
+          "Rain Water Harvesting"
+        ]
+      }
+    ]
+  }
