@@ -1,3 +1,10 @@
+- [Fetch API for making network requests](#fetch-api-for-making-network-requests)
+- [Getting a response with the fetch() method.](#getting-a-response-with-the-fetch-method)
+  - [First:](#first)
+  - [Second:](#second)
+- [Challenge](#challenge)
+
+
 ## Fetch API for making network requests
 We all know now that javascript can be used to make requests over the network to a server and load new information and reload specific parts of the webpage.
 Thanks to the "AJAX" way of doing things.
@@ -38,3 +45,6 @@ Response provides multiple promise-based methods to access the body in various f
 It is interesting however to note that only one method can be used with the response object as using the second method will throw an error since we already have the response body processed with the first method.
 
 We will now look at an example of how we can use fetch() to get a JSON object from a .json file.
+
+## Challenge
+The challenge for this lesson is in the challenge folder. Have fun!

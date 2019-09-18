@@ -1,5 +1,10 @@
 # Agenda and resources
 
+- [Agenda and resources](#agenda-and-resources)
+  - [Intro To AJAX](#intro-to-ajax)
+  - [How AJAX works](#how-ajax-works)
+  - [XMLHttpRequest Object](#xmlhttprequest-object)
+  - [References](#references)
 
 ## Intro To AJAX
 AJAX stands for Asynchronous Javascript and XML and Asynchronous refers to a bunch of events that happen in irregular time intervals.
