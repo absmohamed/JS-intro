@@ -5,10 +5,29 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta http-equiv="X-UA-Compatible" content="ie=edge">
-  <title>Document</title>
+  <title>Random</title>
 </head>
 
 <body>
+  <h1>Random Activity Generator</h1>
+  <form id="activity-form">
+    <label>Activity type: </label>
+    <select>
+      <option value="random">Random</option>
+      <option value= "education">Education</option>
+      <option value= "recreational">Recreational</option>
+      <option value= "social">Social</option>
+      <option value= "diy">Diy</option>
+      <option value= "charity">Charity</option>
+      <option value= "cooking">Cooking</option>
+      <option value = "relaxation">Relaxation</option>
+      <option value= "music">Music</option>
+      <option value= "busywork">BUsywork</option>
+    </select>
+    <label>HOw many activities?</label>
+    <input type="number" min=1 step=1 value=3>
+    <input type="submit" value="Get activities">
+  </form>
   <script src="script.js"></script>
 </body>
 
