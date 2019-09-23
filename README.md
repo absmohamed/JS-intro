@@ -55,7 +55,8 @@ Each day there will be a new directory added with the code snippets used for the
 - [Async/Await](Async_Await/README.md)
 
 ## Day 12
-- AJAX, XHR, Fetch
+- [AJAX, XHR](https://github.com/CoderAcademy-BRI/js-intro-lessons/tree/master/AJAX)
+- [Fetch](https://github.com/CoderAcademy-BRI/js-intro-lessons/tree/master/FetchAPI)
 
 ## Day 13
 - JS Revision
