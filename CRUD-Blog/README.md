@@ -723,6 +723,8 @@ How would you implement the `filter` method in utilities.js to support showing o
 
 ## Challenge
 
+If you had trouble following along with this lesson and your server isn't working, you can use the code in the `code-complete` folder. Make sure you get help understanding if you are struggling.
+
 ### Part 1
 Implement support for returning all posts for a given category, for example when you type `http://localhost:3000/posts?category=code` in the browser. 
 
