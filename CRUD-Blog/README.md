@@ -11,12 +11,6 @@
 		- [npm init, install dependencies](#npm-init-install-dependencies)
 		- [Create the directories and files](#create-the-directories-and-files)
 	- [Build the router](#build-the-router)
-		- [READ routes](#read-routes)
-		- [Testing utilities.js](#testing-utilitiesjs)
-		- [CREATE route](#create-route)
-		- [DELETE route](#delete-route)
-		- [UPDATE route](#update-route)
-	- [Query strings](#query-strings)
 	- [Challenge](#challenge)
 		- [Part 1](#part-1)
 		- [Part 2](#part-2)
@@ -92,6 +86,8 @@ A route for DELETE on "/posts:id" will delete a single post with the specified i
 (We'll leave out forever this time)
 
 **4. Add a script to run the server**
+
+If we define a `start` script, we can run it with `npm start`
 
 ```javascript
   "scripts": {
@@ -215,6 +211,10 @@ posts_routes.rb
 // PUT on 'posts/:id'
 // Updates a post with id
 ```
+
+Before we start - make sure our skeleton app runs:
+
+```npm start```
 
 ### READ routes
 
