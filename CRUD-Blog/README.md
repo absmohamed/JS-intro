@@ -1,29 +1,36 @@
 # Blog - creating a CRUD application
 
 - [Blog - creating a CRUD application](#blog---creating-a-crud-application)
-	- [References](#references)
-	- [The server-side routes for CRUD operations](#the-server-side-routes-for-crud-operations)
-		- [CREATE](#create)
-		- [READ](#read)
-		- [UPDATE](#update)
-		- [DELETE](#delete)
-	- [Create the app structure](#create-the-app-structure)
-		- [npm init, install dependencies](#npm-init-install-dependencies)
-		- [Create the directories and files](#create-the-directories-and-files)
-	- [Build the router](#build-the-router)
-	- [Challenge](#challenge)
-		- [Part 1](#part-1)
-		- [Part 2](#part-2)
+  - [References](#references)
+  - [The server-side routes for CRUD operations](#the-server-side-routes-for-crud-operations)
+    - [CREATE](#create)
+    - [READ](#read)
+    - [UPDATE](#update)
+    - [DELETE](#delete)
+  - [Create the app structure](#create-the-app-structure)
+    - [npm init, install dependencies](#npm-init-install-dependencies)
+    - [Create the directories and files](#create-the-directories-and-files)
+  - [Build the router](#build-the-router)
+    - [READ routes](#read-routes)
+    - [Testing utilities.js](#testing-utilitiesjs)
+    - [CREATE route](#create-route)
+    - [DELETE route](#delete-route)
+    - [UPDATE route](#update-route)
+  - [Query strings](#query-strings)
+  - [Challenge](#challenge)
+    - [Part 1](#part-1)
+    - [Part 2](#part-2)
 
 ## References
+
 [Testing setup and tear down](https://jestjs.io/docs/en/setup-teardown)
 [Query strings and Express.js](https://flaviocopes.com/express-get-query-variables/)
 
 In this lesson, we'll create a blog to learn how to make a CRUD application in JavaScript. First we'll focus on the server-side, implementing it with Express.js.
 
-We'll write some automated tests as we go to make sure our express app is working as expected, so that when we get to implementing the client, we can feel confident the server will always respond as we expect.
+We'll write some automated tests as we go to make sure our express app is working as expected, so that when we get to implementing the client, we can feel confident the server will always respond as we expect. We'll use `mocha` for testing, because `jest` is best suited for front-end testing. While it works fine for some other applications, like the morning challenges, it does not work well with MongoDB, and we'll be adding that to our application later.
 
-As we continue, we'll add support for MongoDB and authentication, we'll learn about how we can use cookies and the session, and then later how to build a front-end for our blog in React.js.
+As we continue, we'll also add support for authentication, we'll learn about how we can use cookies and the session, and then later how to build a front-end for our blog in React.js.
 
 ## The server-side routes for CRUD operations
 
@@ -51,7 +58,7 @@ A route for GET on "/posts:id" will return a single blog post with the specified
 
 In a future enhancement, we could provide other functions, such as:
 
-- blogs by username
+- blogs by user
 - blogs by category
 
 ### UPDATE
@@ -81,7 +88,8 @@ A route for DELETE on "/posts:id" will delete a single post with the specified i
 **3. Install development dependencies (with --save-dev):**
 
 - nodemon
-- jest
+- mocha
+- expect
 
 (We'll leave out forever this time)
 
@@ -99,7 +107,7 @@ If we define a `start` script, we can run it with `npm start`
 
 ```javascript
   "scripts": {
-    "test": "jest",
+    "test": "mocha",
   }
 ```
 
@@ -113,37 +121,39 @@ Create a file called **posts_routes.js** to store the router creation for the bl
 
 Create a file called **posts_controller.js** to store the functions used by the blog posts router.
 
-Create a file called **posts_controller.tests.js** to store automated tests for the blog posts controller functions.
-
 **utils directory**
 
 Create a file called **utilities.js** to store utility or helper functions.
 
-Create a file called **utilities.test.js** to store automated tests for the utility functions.
+**test directory**
+Create a file called **utilities.test.js** to store automated tests for the utility functions. Since we are using `mocha` for testing, we will put this file in a subdirectory called `test`, because that's what mocha will use by default.
 
 **data directory**
 
 For now we will store data in a .json file. Create a **blog_posts.json** to store the blog posts data. Put one entry in the file to use for manual testing:
 
 blog_posts.json
+
 ```javascript
 {
   "1": {
     "title": "My first blog post",
 		"create_date": "20/09/2019",
 		"modified_date": "20/09/2019",
-    "username": "janel",
+    "user": "janel",
     "content": "This is my first blog post!",
     "category": ""
   }
 }
 ```
 
-Create another file called **blog_posts.test.json**, and just put an empty object in it. We'll use this for automated testing:
+Create another file called **blog_posts.test.json** in the **test** directory, and just put an empty object in it. We'll use this for automated testing:
 
-blog_posts.test.json
+test/blog_posts.test.json
+
 ```javascript
-{}
+{
+}
 ```
 
 **app.js**
@@ -151,6 +161,7 @@ blog_posts.test.json
 Will define the application, enable application middleware (cors and body-parser), set up routing (using the router), and make it listen (on port 3000):
 
 app.js
+
 ```javascript
 const express = require("express")
 const cors = require("cors")
@@ -175,6 +186,7 @@ app.listen(port, () => {
 We know we will need `express()` and `express.Router()`, so we can declare those at the top of our `posts_routes.rb`:
 
 posts_routes.rb
+
 ```javascript
 const express = require("express")
 const router = express.Router()
@@ -183,6 +195,7 @@ const router = express.Router()
 And at the end of the file, we'll export the router:
 
 posts_routes.rb
+
 ```javascript
 module.exports = router
 ```
@@ -190,6 +203,7 @@ module.exports = router
 As we discussed, we'll need to define the following routes:
 
 posts_routes.rb
+
 ```javascript
 // READ
 // GET on '/posts'
@@ -214,7 +228,7 @@ posts_routes.rb
 
 Before we start - make sure our skeleton app runs:
 
-```npm start```
+`npm start`
 
 ### READ routes
 
@@ -243,44 +257,46 @@ In `utilities.js`, define the core logic for these routes. We will have to read 
 In addition to the two utility functions to get blog post data, we will use a couple of helper functions to enable testing (`setDataFile`, `loadData`, and `getDataFileRelativeToApp` - for writing data back to the file).
 
 utilities.js
-```javascript
-let dataFile = "../data/blog_posts.json";
-let blogPosts = require(dataFile);
 
-const getAllPosts = function() {
-	return blogPosts;
-};
+```javascript
+let dataFile = "../data/blog_posts.json"
+let blogPosts = require(dataFile)
+
+const getAllPosts = function(req) {
+	return blogPosts
+}
 
 const getPostById = function(req) {
-	let post = blogPosts[req.params.id];
-	if (post) return post;
-	else req.error = "Post not found";
-};
+	let post = blogPosts[req.params.id]
+	if (post) return post
+	else req.error = "Post not found"
+}
 
 // Allows flexibility for testing
-const setDataFile = function (fileName) {
-  dataFile = fileName;
-  loadData();
-};
+const setDataFile = function(fileName) {
+	dataFile = fileName
+	loadData()
+}
 
 // Loads data from dataFile
 function loadData() {
-  blogPosts = require(dataFile);
+	blogPosts = require(dataFile)
 }
 
-const getDataFileRelativeToApp = function (file) {
-  // Remove the ../ from the dataFile path for writing
-  // because the writeFile looks for path relative to the app, not utilities.js
-  return file.substring(file.lastIndexOf('../') + 3, file.length);
-};
+const getDataFileRelativeToApp = function(file) {
+	// Remove the ../ from the dataFile path for writing
+	// because the writeFile looks for path relative to the app, not utilities.js
+	return file.substring(file.lastIndexOf("../") + 3, file.length)
+}
 
 module.exports = {
-	getAllPosts,
+	getAllPosts,const utilities = require("./utilities")
 	getPostById,
 	setDataFile,
 	getDataFileRelativeToApp
-};
+}
 ```
+
 ---
 
 **Passing back errors**
@@ -300,64 +316,67 @@ It is important to make sure our data is freshly set up for each test, so we don
 ---
 
 utilities.test.js
+
 ```javascript
-const utilities = require('./utilities');
-const fs = require('fs');
+const express = require("express")
+const fs = require("fs")
+const utilities = require("./utilities")
 // Use test data file
-const testDataFile = '../data/blog_posts.test.json';
+const testDataFile = "../data/blog_posts.test.json"
 // When we write to the file, the path is relative to app.js
-const testDataFileForWrite = utilities.getDataFileRelativeToApp();
+const testDataFileForWrite = utilities.getDataFileRelativeToApp()
 
 beforeEach(() => {
-  // Set and load data from test data file
-  setupData();
-});
+	// Set and load data from test data file
+	setupData()
+})
 afterEach(() => {
-  // Empty test file data
-  tearDownData();
-});
+	// Empty test file data
+	tearDownData()
+})
 
-describe('getAllPosts with one post', () => {
-  it('should get a post if one exists', () => {
-    expect(Object.keys(utilities.getAllPosts()).length).toBe(1);
-  });
-  it('username of first post should be tester', () => {
-    expect(utilities.getAllPosts()["1"].username).toBe('tester');
-  });
-});
+describe("getAllPosts with one post", () => {
+	it("should get a post if one exists", () => {
+		// Pass an empty req object
+		expect(Object.keys(utilities.getAllPosts({})).length).toBe(1)
+	})
+	it("user of first post should be tester", () => {
+		expect(utilities.getAllPosts({})["1"].user).toBe("tester")
+	})
+})
 
-describe('getPostById', () => {
-  // Define a req object with the expected structure to pass a parameter
-  const req = {
-    params: {
-      id: "1"
-    }
-  }
-  it('username of post with id 1 should be tester', () => {
-    expect(utilities.getPostById(req).username).toBe('tester');
-  });
-});
+describe("getPostById", () => {
+	// Define a req object with the expected structure to pass a parameter
+	const req = {
+		params: {
+			id: "1"
+		}
+	}
+	it("user of post with id 1 should be tester", () => {
+		expect(utilities.getPostById(req).user).toBe("tester")
+	})
+})
 
 // Setup and tear down functions
 function setupData() {
-  let testPostData = {};
-	let testPost = {};
-	let date = Date.now();
-  testPost.title = 'Test post 1';
-  testPost.username = 'tester';
-	testPost.create_date = date;
-	testPost.modified_date = date;
-  testPost.content = 'This is the first test post';
-  testPost.category = '';
-  testPostData["1"] = testPost;
+	let testPostData = {}
+	let testPost = {}
+	let date = Date.now()
+	testPost.title = "Test post 1"
+	testPost.user = "tester"
+	testPost.create_date = date
+	testPost.modified_date = date
+	testPost.content = "This is the first test post"
+	testPost.category = ""
+	testPostData["1"] = testPost
 
-  fs.writeFileSync(testDataFileForWrite, JSON.stringify(testPostData));
-  utilities.setDataFile(testDataFile);
+	fs.writeFileSync(testDataFileForWrite, JSON.stringify(testPostData))
+	utilities.setDataFile(testDataFile)
 }
 
 function tearDownData() {
-  let testPostData = {};
-  fs.writeFileSync(testDataFileForWrite, JSON.stringify(testPostData));
+	let testPostData = {}
+	fs.writeFileSync(testDataFileForWrite, JSON.stringify(testPostData))
 }
 ```
 
@@ -370,26 +389,27 @@ We can test this right away with `npm test`. This will prove that our `utilites.
 In `posts_controller.js`, define the functions that will be used in `posts_routes.js`. While we define the base logic in `utilities.js`, we use `posts_controller.js` to handle sending the response status and body back to the client:
 
 posts_controller.js
+
 ```javascript
-const { getAllPosts, getPostById } = require("../utils/utilities");
+const { getAllPosts, getPostById } = require("../utils/utilities")
 
 const getPosts = function(req, res) {
-	res.send(getAllPosts());
-};
+	res.send(getAllPosts(req))
+}
 
 const getPost = function(req, res) {
-	let post = getPostById(req);
-	if (post) res.send(post);
+	let post = getPostById(req)
+	if (post) res.send(post)
 	else {
-		res.status(404);
-		res.send(req.error);
+		res.status(404)
+		res.send(req.error)
 	}
-};
+}
 
 module.exports = {
 	getPosts,
 	getPost
-};
+}
 ```
 
 We can define tests for the `posts_controller`, but it requires some mocking of the request and response objects used in the functions. We'll look at this in another lesson, but one reason we create the controller functions is to make it possible to automate testing of our route logic.
@@ -399,113 +419,119 @@ We can define tests for the `posts_controller`, but it requires some mocking of 
 In `posts_routes.js`, require the controller functions, and define the get routes for all blog posts and a blog post by id:
 
 posts_routes.js
+
 ```javascript
-const { getPosts, getPost } = require("../controllers/posts_controller");
+const { getPosts, getPost } = require("../controllers/posts_controller")
 
 // READ
 // GET on '/posts'
 // Returns all posts
-router.get("/", getPosts);
+router.get("/", getPosts)
 
 // READ
 // GET on '/posts/:id'
 // Returns post with given id
-router.get("/:id", getPost);
+router.get("/:id", getPost)
 ```
 
 Test the read routes manually with Postman and/or a browser.
 
 ### CREATE route
+
 The create function will add a post to the blog. The blog post data will come from the client in the request. The server will validate the data, add the post to the blog in memory, then update the persisted data (stored in a file in this implementation).
 
 The creation of a blog post will come as a POST request on the url `/posts`.
 
-
 **utilities.js**
 
 First define the core functionality in `utilities.js`. To do this implement one function to export:
+
 - addPost
 
 We also need a couple of helper functions:
+
 - getNextId (will get the next available id)
 - writePosts (to persist our data)
 
 utilties.js
+
 ```javascript
 const addPost = function(req) {
 	try {
-		let id = getNextId();
+		let id = getNextId()
 		// set create and modified date to now for a new post
-		let date = Date.now();
-		blogPosts[id] = {};
-		blogPosts[id].title = req.body.title;
-		blogPosts[id].create_date = date;
-		blogPosts[id].modified_date = date;
-		blogPosts[id].username = req.body.username;
-		blogPosts[id].content = req.body.content;
-		blogPosts[id].category = req.body.category || "";
-		writePosts();
-		return blogPosts[id];
+		let date = Date.now()
+		blogPosts[id] = {}
+		blogPosts[id].title = req.body.title
+		blogPosts[id].create_date = date
+		blogPosts[id].modified_date = date
+		blogPosts[id].user = req.body.user
+		blogPosts[id].content = req.body.content
+		blogPosts[id].category = req.body.category || ""
+		writePosts()
+		return blogPosts[id]
 	} catch (error) {
 		// Pass any errors back to the route handler
-		req.error = error;
-		return null;
+		req.error = error
+		return null
 	}
-};
+}
 
 // Returns the next available id for a blog post
 function getNextId() {
-  let ids = Object.keys(blogPosts);
-  let nextId = 1;
-  if (ids.length != 0) nextId = ids[0];
-  for (let i = 1; i < ids.length; i++) {
-    if (ids[i] > nextId) nextId = ids[i];
-  }
+	let ids = Object.keys(blogPosts)
+	let nextId = 1
+	if (ids.length != 0) nextId = ids[0]
+	for (let i = 1; i < ids.length; i++) {
+		if (ids[i] > nextId) nextId = ids[i]
+	}
 
-  nextId++;
-  return nextId;
+	nextId++
+	return nextId
 }
 
 // Writes blogPosts to the data file (synchronously)
 function writePosts() {
-  fs.writeFileSync(getDataFileRelativeToApp(), JSON.stringify(blogPosts));
+	fs.writeFileSync(getDataFileRelativeToApp(), JSON.stringify(blogPosts))
 }
 
 module.exports = {
-  getAllPosts,
-  getPostById,
-  addPost,
-  setDataFile,
-  getDataFileRelativeToApp
-};
+	getAllPosts,
+	getPostById,
+	addPost,
+	setDataFile,
+	getDataFileRelativeToApp
+}
 ```
+
 ---
 
 **Why make write file synchronous?**
 
-Since we aren't using a proper database yet, we will use a synchronous writeFile to prevent any unpredicable results due to the data persistence happening asynchronously. 
+Since we aren't using a proper database yet, we will use a synchronous writeFile to prevent any unpredicable results due to the data persistence happening asynchronously.
 
 ---
 
 Add a test for the addPost function in utilities:
 
 utilities.test.js
+
 ```javascript
-describe('addPost', () => {
-  it('should add a post', () => {
-    // define a req object with expected structure
-    const req = {
-      body: {
-        title: "Another post",
-        username: "tester",
-        content: "This is another blog post!",
-        category: ""
-      }
-    }
-    let post = utilities.addPost(req);
-    expect(post.title).toBe(req.body.title);
-  });
-});
+describe("addPost", () => {
+	it("should add a post", () => {
+		// define a req object with expected structure
+		const req = {
+			body: {
+				title: "Another post",
+				user: "tester",
+				content: "This is another blog post!",
+				category: ""
+			}
+		}
+		let post = utilities.addPost(req)
+		expect(post.title).toBe(req.body.title)
+	})
+})
 ```
 
 **posts_controller.js**
@@ -513,18 +539,18 @@ describe('addPost', () => {
 Add a function to make a new blog post to the controller that will send the response and status.
 
 posts_controller.js
-```javascript
 
-const makePost = function (req, res) {
-  let post = addPost(req);
-  if (post) {
-    res.status(201);
-    res.send(post);
-  } else {
-    res.status(500);
-    res.send(`Error occurred: ${req.error}`);
-  }
-};
+```javascript
+const makePost = function(req, res) {
+	let post = addPost(req)
+	if (post) {
+		res.status(201)
+		res.send(post)
+	} else {
+		res.status(500)
+		res.send(`Error occurred: ${req.error}`)
+	}
+}
 ```
 
 **posts_routes.js**
@@ -532,6 +558,7 @@ const makePost = function (req, res) {
 Add the `makePost` function to the list of required functions and define the post route in the router:
 
 posts_routes.js
+
 ```javascript
 const { getPosts, getPost, makePost } = require("../controllers/posts_controller")
 
@@ -540,36 +567,40 @@ const { getPosts, getPost, makePost } = require("../controllers/posts_controller
 // Creates a new post
 router.post("/", makePost)
 ```
+
 Test creating a post manually using Postman:
 
 ![test add post with Postman](img/crud-test-add-post-postman.png)
 
 ### DELETE route
+
 Delete will take an id from req.params, delete the blog post from the in-memory object, then write the blog posts back to the file. It will return the remaining blog posts.
 
 **utililties.js**
 
 utilities.js
+
 ```javascript
-const deletePost = function (id) {
-  if (Object.keys(blogPosts).includes(id)) delete blogPosts[id];
-  writePosts();
-  return blogPosts;
-};
+const deletePost = function(id) {
+	if (Object.keys(blogPosts).includes(id)) delete blogPosts[id]
+	writePosts()
+	return blogPosts
+}
 ```
 
 Test deletePost:
 
 utilities.test.js
+
 ```javascript
 // deletePost
-describe('deletePost', () => {
-  it('should delete the specified post', () => {
-    let id = "1";
-    let blogPosts = utilities.deletePost(id);
-    let ids = Object.keys(blogPosts);
-    expect(ids.includes("1")).toBe(false);
-  })
+describe("deletePost", () => {
+	it("should delete the specified post", () => {
+		let id = "1"
+		let blogPosts = utilities.deletePost(id)
+		let ids = Object.keys(blogPosts)
+		expect(ids.includes("1")).toBe(false)
+	})
 })
 ```
 
@@ -578,11 +609,12 @@ describe('deletePost', () => {
 Handle the response in the posts_controller for delete. Return the remaining blogPosts in the response:
 
 posts_controller.js
+
 ```javascript
-const removePost = function (req, res) {
-  let blogPosts = deletePost(req.params.id);
-  res.send(blogPosts);
-};
+const removePost = function(req, res) {
+	let blogPosts = deletePost(req.params.id)
+	res.send(blogPosts)
+}
 ```
 
 **posts_routes.js**
@@ -590,11 +622,12 @@ const removePost = function (req, res) {
 Add the route handling to posts_routes:
 
 posts_routes.js
+
 ```javascript
 // DELETE
 // DELETE on '/posts/:id'
 // Deletes a post with id
-router.delete('/:id', removePost);
+router.delete("/:id", removePost)
 ```
 
 Manually test deleting a post from Postman.
@@ -602,6 +635,7 @@ Manually test deleting a post from Postman.
 ![manual delete test in Postman](img/crud-delete-test-postman.png)
 
 ### UPDATE route
+
 We will implement the PUT method on `/posts/:id` to provide UPDATE. We could also implement PATCH, which would selectively update according to what is sent in the req.body by the client. With PUT, we assume the client is sending all fields and we replace the entire record.
 
 The id comes in `req.params`, and the blog post record fields come in `req.body` from the client.
@@ -609,72 +643,76 @@ The id comes in `req.params`, and the blog post record fields come in `req.body`
 Implement the core logic in `utilities.js`.
 
 utilities.js
+
 ```javascript
-const updatePost = function (req) {
-  try {
-    let id = req.params.id;
-    if (!blogPosts[id]) throw 'Post not found';
-    blogPosts[id].title = req.body.title;
-    blogPosts[id].content = req.body.content;
-    blogPosts[id].modified_date = Date.now();
-    writePosts();
-    return blogPosts[id];
-  } catch (error) {
-    req.error = error;
-    return null;
-  }
-};
+const updatePost = function(req) {
+	try {
+		let id = req.params.id
+		if (!blogPosts[id]) throw "Post not found"
+		blogPosts[id].title = req.body.title
+		blogPosts[id].content = req.body.content
+		blogPosts[id].modified_date = Date.now()
+		writePosts()
+		return blogPosts[id]
+	} catch (error) {
+		req.error = error
+		return null
+	}
+}
 ```
 
 Test in utilities.test.js
 
 utilities.test.js
+
 ```javascript
 // updatePost
-describe('updatePost', () => {
-  it('should update a post', () => {
-    // set up a req object
-    const req = {
-      params: {
-        id: "2"
-      },
-      body: {
-        title: "Updated post",
-        username: "tester",
-        content: "This is an updated blog post!",
-        category: ""
-      }
-    };
-    let post = utilities.updatePost(req);
-    expect(post.title).toBe(req.body.title);
-  });
-});
+describe("updatePost", () => {
+	it("should update a post", () => {
+		// set up a req object
+		const req = {
+			params: {
+				id: "2"
+			},
+			body: {
+				title: "Updated post",
+				user: "tester",
+				content: "This is an updated blog post!",
+				category: ""
+			}
+		}
+		let post = utilities.updatePost(req)
+		expect(post.title).toBe(req.body.title)
+	})
+})
 ```
 
 Implement a function in posts_controller to send the response.
 
 posts_controller.js
+
 ```javascript
-const changePost = function (req, res) {
-  let post = updatePost(req);
-  if (post) {
-    res.status(200);
-    res.send(post);
-  } else {
-    res.status(500);
-    res.send(`Error occurred: ${req.error}`);
-  }
-};
+const changePost = function(req, res) {
+	let post = updatePost(req)
+	if (post) {
+		res.status(200)
+		res.send(post)
+	} else {
+		res.status(500)
+		res.send(`Error occurred: ${req.error}`)
+	}
+}
 ```
 
 Implement the route handler in posts_routes.
 
 posts_routes.js
+
 ```javascript
 // UPDATE
 // PUT on 'posts/:id'
 // Updates a post with id
-router.put('/:id', changePost);
+router.put("/:id", changePost)
 ```
 
 Manually test update in Postman.
@@ -682,6 +720,7 @@ Manually test update in Postman.
 ![manual test of PUT in Postman](img/crud-test-put-postman.png)
 
 ## Query strings
+
 In order to implement returning blog posts for a particular user or category, we have to understand http request query strings.
 
 Query strings come following a `?` at the end of the URL:
@@ -693,7 +732,7 @@ http://localhost:3000/posts?category=coding
 Multiple query parameters are separated by `&` operators
 
 ```
-http://localhost:3000/posts?username=janel&category=coding
+http://localhost:3000/posts?user=janel&category=coding
 ```
 
 To access the query string, we can refer to `req.query`, which will be an object that stores the query parameter names as keys and their associated values. If there is no query string with the req object, `req.query` will be an empty object (rather than undefined or null).
@@ -703,20 +742,22 @@ So if we want to handle query parameters on our GET route for `/posts`, we would
 In `posts_controller.js`, we would pass the req object to the utilities function:
 
 posts_controller.js
+
 ```javascript
-const getPosts = function (req, res) {
-  res.send(getAllPosts(req));
-};
+const getPosts = function(req, res) {
+	res.send(getAllPosts(req))
+}
 ```
 
 In utilities.js, we would look for any query strings, and filter the data that we send back:
 
 utilities.js
+
 ```javascript
 // get all posts
-const getAllPosts = function (req) {
-  return filter(req.query);
-};
+const getAllPosts = function(req) {
+	return filter(req.query)
+}
 ```
 
 How would you implement the `filter` method in utilities.js to support showing only blog posts for a specified category? This is left as a challenge.
@@ -726,15 +767,17 @@ How would you implement the `filter` method in utilities.js to support showing o
 If you had trouble following along with this lesson and your server isn't working, you can use the code in the `code-complete` folder. Make sure you get help understanding if you are struggling.
 
 ### Part 1
-Implement support for returning all posts for a given category, for example when you type `http://localhost:3000/posts?category=code` in the browser. 
+
+Implement support for returning all posts for a given category, for example when you type `http://localhost:3000/posts?category=code` in the browser.
 
 Remember to write a test for your modified getAllPosts function in utilities.test.js. Also manually test your changes from Postman or the browser.
 
 ### Part 2
+
 Add some more tests to utilities.test.js for corner cases. Some ideas are:
+
 - There are no blog posts for GET on '/posts'
 - An attempt to create a post without all required data
 - A GET request for a specific post that isn't found
 
 Can you think of other cases?
-

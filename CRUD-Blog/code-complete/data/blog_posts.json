@@ -3,7 +3,7 @@
     "title": "My first blog post",
     "create_date": "20/09/2019",
     "modified_date": "20/09/2019",
-    "username": "janel",
+    "user": "janel",
     "content": "This is my first blog post!",
     "category": ""
   }
