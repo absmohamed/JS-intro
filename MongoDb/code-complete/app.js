@@ -11,10 +11,14 @@ app.use(cors());
 app.use(bodyParser.json());
 
 const dbConn = 'mongodb://localhost/posts'
-// const dbConn = process.env.MONGODB_DEPLOYED
+// Set three properties to avoid deprecation warnings:
+// useNewUrlParser: true
+// useUnifiedTopology: true
+// useFileAndModify: false
 mongoose.connect(dbConn, {
         useNewUrlParser: true,
-        useUnifiedTopology: true
+        useUnifiedTopology: true,
+        useFindAndModify: false
     },
     (err) => {
         if (err) {
@@ -23,9 +27,6 @@ mongoose.connect(dbConn, {
             console.log('Connected to database!');
         }
     });
-mongoose.set('useFindAndModify', false);
-
-
 
 app.get('/', (req, res) => {
     console.log("get on /");

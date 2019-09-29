@@ -7,9 +7,11 @@ const {
 } = require('../utils/utilities');
 
 const getPosts = function (req, res) {
+    // getAllPosts returns a promise
     getAllPosts(req).then((posts) => {
         res.send(posts);
     }).catch((err) => {
+        // Errors are passed back from mongodb
         res.status(500);
         res.json({
             error: err.message
@@ -18,6 +20,7 @@ const getPosts = function (req, res) {
 };
 
 const getPost = function (req, res) {
+    // getPostById returns a promise
     getPostById(req).then((post) => {
         res.send(post);
     }).catch((err) => {
@@ -27,6 +30,7 @@ const getPost = function (req, res) {
 };
 
 const makePost = function (req, res) {
+    // addPost returns a promise
     addPost(req).then((post) => {
         res.status(201);
         res.send(post);
@@ -39,7 +43,8 @@ const makePost = function (req, res) {
 };
 
 const removePost = function (req, res) {
-    deletePost(req.params.id).then(() => res.sendStatus(204))
+    // deletePost returns a promise
+    deletePost(req.params.id).then(() => res.status(204))
         .catch((err) => {
             res.status(500);
             res.json({
@@ -49,6 +54,7 @@ const removePost = function (req, res) {
 };
 
 const changePost = function (req, res) {
+    // updatePost returns a promise
     updatePost(req).then((post) => {
         res.status(200);
         res.send(post);
