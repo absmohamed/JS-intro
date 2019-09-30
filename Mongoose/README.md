@@ -2,6 +2,25 @@
 
 Mongoose is an ODM (object data modelling) node module that we will use to make it easier for our application to interact with the data in MongoDB. This is similar to the way we used ActiveRecord (an ORM - object resource mapping) with our Rails app.
 
+- [Mongoose](#mongoose)
+  - [Resources](#resources)
+  - [Mongoose model and schema](#mongoose-model-and-schema)
+  - [Mongoose queries](#mongoose-queries)
+    - [All database operations are asynchronous operations](#all-database-operations-are-asynchronous-operations)
+  - [Using Post.find to implement READ](#using-postfind-to-implement-read)
+  - [Testing asynchronous code](#testing-asynchronous-code)
+  - [Setting up test data](#setting-up-test-data)
+    - [Connect to test database](#connect-to-test-database)
+    - [Setup and tear down for each test](#setup-and-tear-down-for-each-test)
+  - [Testing the asynchronous utilities functions](#testing-the-asynchronous-utilities-functions)
+  - [Run the test for the new getAllPosts](#run-the-test-for-the-new-getallposts)
+  - [Using Post.find to get a specific post by id](#using-postfind-to-get-a-specific-post-by-id)
+  - [Test getPost](#test-getpost)
+  - [Using Post.create to implement CREATE](#using-postcreate-to-implement-create)
+  - [Data validation for create](#data-validation-for-create)
+  - [Using post.findbyIdAndRemove for DELETE](#using-postfindbyidandremove-for-delete)
+  - [Using Post.findOneAndUpdate for UPDATE](#using-postfindoneandupdate-for-update)
+
 ## Resources
 
 - [Mongoose Guide](https://mongoosejs.com/docs/guide.html)
