@@ -7,7 +7,7 @@ const Post = require('../models/post');
 let postId = null;
 
 // set up connection for test database
-const dbConn = 'mongodb://localhost/posts_test'
+const dbConn = 'mongodb://localhost/blog_app_test'
 
 // Use done to deal with asynchronous code - done is called when the hooks completes
 before((done) => {
@@ -33,7 +33,7 @@ after((done) => {
 })
 
 beforeEach(async function () {
-    // Set and load data from test data file
+    // Load a test record in setupData
     // Use await so we can access the postId, which is used by some tests
     let post = await setupData();
     postId = post._id;

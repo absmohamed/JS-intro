@@ -44,15 +44,9 @@ const updatePost = function (req) {
 
 // filters data based on category
 async function filter(queryParams) {
-    let filteredPosts = {};
-    let query = {};
     if (queryParams.category && queryParams.category.length > 0) {
-        query = {
-            category: queryParams.category
-        };
-    }
-    filteredPosts = await Post.find(query);
-    return filteredPosts;
+        return await Post.findByCategory(queryParams.category);
+    } else return await Post.find({});
 }
 
 module.exports = {
