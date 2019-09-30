@@ -55,23 +55,39 @@ Each day there will be a new directory added with the code snippets used for the
 - [Async/Await](Async_Await/README.md)
 
 ## Day 12
+
 - [AJAX, XHR](https://github.com/CoderAcademy-BRI/js-intro-lessons/tree/master/AJAX)
 - [Fetch](https://github.com/CoderAcademy-BRI/js-intro-lessons/tree/master/FetchAPI)
 
 ## Day 13
+
 - JS Revision
 
 ## Day 14
+
 - Hackathon
 
 ## Day 15
+
 - Hackathon
 
 ## Day 16
+
 - [Node.js](https://github.com/CoderAcademy-BRI/js-intro-lessons/tree/master/Node)
-  
+
 ## Day 17
+
 - [Express Intro](https://github.com/CoderAcademy-BRI/js-intro-lessons/tree/master/Express)
+- [Cookies](https://github.com/CoderAcademy-BRI/js-intro-lessons/tree/master/Cookies)
 
 ## Day 18
+
 - [Modularity, CRUD](https://github.com/CoderAcademy-BRI/js-intro-lessons/tree/master/Modularity)
+
+## Day 19
+
+- [MongoDb](https://github.com/CoderAcademy-BRI/js-intro-lessons/tree/master/MongoDb)
+
+## Day 20
+
+- [Authorization](https://github.com/CoderAcademy-BRI/js-intro-lessons/tree/master/Athorization)
