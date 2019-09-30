@@ -10,37 +10,25 @@ let postId = null;
 const dbConn = 'mongodb://localhost/blog_app_test'
 
 // Use done to deal with asynchronous code - done is called when the hooks completes
-before((done) => {
-    // Connect to the database (same as we do in app.js)
-    mongoose.connect(dbConn, {
-            useNewUrlParser: true,
-            useUnifiedTopology: true,
-            useFindAndModify: false
-        },
-        (err) => {
-            if (err) {
-                console.log('Error connecting to database', err);
-                done();
-            } else {
-                console.log('Connected to database!');
-                done();
-            }
-        });
-});
+before((done) => connectToDb(done));
 
+// Disconnect from the test database after all tests run. Call done to indicate complete.
 after((done) => {
     mongoose.disconnect(() => done())
 })
 
+// Set up test data before each test
 beforeEach(async function () {
     // Load a test record in setupData
     // Use await so we can access the postId, which is used by some tests
     let post = await setupData();
     postId = post._id;
 });
+
+// Delete test data after each test
 afterEach((done) => {
     //   // Empty test file data
-    tearDownData().then(() => done());
+    tearDownData().then(() => done()).catch(() => done());
 });
 
 describe('getAllPosts with one post', () => {
@@ -56,7 +44,7 @@ describe('getAllPosts with one post', () => {
             query: {}
         };
         let posts = await utilities.getAllPosts(req);
-        expect(posts[0].user).toBe('tester');
+        expect(posts[0].username).toBe('tester');
     });
 });
 
@@ -69,7 +57,7 @@ describe('getPostById', () => {
             }
         }
         let post = await utilities.getPostById(req);
-        expect(post.user).toBe('tester');
+        expect(post.username).toBe('tester');
     });
 });
 
@@ -80,7 +68,7 @@ describe('addPost', () => {
         const req = {
             body: {
                 title: "Another post",
-                user: "tester",
+                username: "tester",
                 content: "This is another blog post!",
                 category: ""
             }
@@ -109,7 +97,7 @@ describe('updatePost', () => {
             },
             body: {
                 title: "Updated post",
-                user: "tester",
+                username: "tester",
                 content: "This is an updated blog post!",
                 category: ""
             }
@@ -120,11 +108,31 @@ describe('updatePost', () => {
 });
 
 // Setup and tear down functions
+
+// Connect to the test database
+function connectToDb(done) {
+    // Connect to the database (same as we do in app.js)
+    mongoose.connect(dbConn, {
+            useNewUrlParser: true,
+            useUnifiedTopology: true,
+            useFindAndModify: false
+        },
+        (err) => {
+            if (err) {
+                console.log('Error connecting to database', err);
+                done();
+            } else {
+                console.log('Connected to database!');
+                done();
+            }
+        });
+}
+
 function setupData() {
     let date = Date.now();
     let testPost = {};
     testPost.title = 'Test post 1';
-    testPost.user = 'tester';
+    testPost.username = 'tester';
     testPost.create_date = date;
     testPost.modified_date = date;
     testPost.content = 'This is the first test post';

@@ -5,7 +5,7 @@ const Post = require('../models/post');
 // get all posts
 // return a promise
 const getAllPosts = async function (req) {
-    return filter(req.query);
+    return Post.find();
 };
 
 // get post by id
@@ -27,7 +27,7 @@ const addPost = function (req) {
 // delete post
 // returns a promise
 const deletePost = function (id) {
-    return Post.findOneAndRemove(id);
+    return Post.findByIdAndRemove(id);
 };
 
 // update post
