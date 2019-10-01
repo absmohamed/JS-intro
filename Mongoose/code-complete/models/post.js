@@ -26,10 +26,4 @@ const Post = new Schema({
     category: String
 });
 
-Post.statics.findByCategory = function (category) {
-    return this.find({
-        category: category
-    });
-}
-
 module.exports = mongoose.model('Post', Post);

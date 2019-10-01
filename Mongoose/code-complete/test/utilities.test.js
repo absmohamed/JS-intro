@@ -76,6 +76,20 @@ describe('addPost', () => {
         let post = await utilities.addPost(req);
         expect(post.title).toBe(req.body.title);
     });
+    it('should fail if a required field is missing', async function () {
+        // define a req object with expected structure
+        const req = {
+            body: {
+                title: "Another post",
+                // username: "tester",
+                content: "This is another blog post!",
+                category: ""
+            }
+        }
+        await utilities.addPost(req).catch((err) => {
+            expect(err.message).toMatch(/validation/);
+        });
+    });
 });
 
 // deletePost

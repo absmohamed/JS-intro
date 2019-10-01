@@ -4,7 +4,7 @@ const Post = require('../models/post');
 
 // get all posts
 // return a promise
-const getAllPosts = async function (req) {
+const getAllPosts = function (req) {
     return Post.find();
 };
 
@@ -39,15 +39,6 @@ const updatePost = function (req) {
         new: true
     });
 };
-
-// Local helper functions
-
-// filters data based on category
-async function filter(queryParams) {
-    if (queryParams.category && queryParams.category.length > 0) {
-        return await Post.findByCategory(queryParams.category);
-    } else return await Post.find({});
-}
 
 module.exports = {
     getAllPosts,

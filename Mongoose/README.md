@@ -20,6 +20,7 @@ Mongoose is an ODM (object data modelling) node module that we will use to make 
   - [Data validation for create](#data-validation-for-create)
   - [Using post.findbyIdAndRemove for DELETE](#using-postfindbyidandremove-for-delete)
   - [Using Post.findOneAndUpdate for UPDATE](#using-postfindoneandupdate-for-update)
+  - [Challenge](#challenge)
 
 ## Resources
 
@@ -130,7 +131,7 @@ For our Post model schema, we will use these types:
 - content: String
 - category: String
 
-One built-in validation we can specify is which of these is required. We'll make `title`, `create_date`, `modified_date`, `username`, and `content` required.
+One built-in validation we can specify is which of these is required. We'll make `title`, `create_date`, `modified_date`, `username`, and `content` required. There are some other [built-in validations available, and you can create custom validations as described in the documentation for Mongoose](https://mongoosejs.com/docs/4.x/docs/validation.html).
 
 post.js
 
@@ -203,7 +204,7 @@ So we could change our implementation of `getAllPosts` in `utilities.js` to the 
 ```javascript
 // get all posts
 // return a promise
-const getAllPosts = async function(req) {
+const getAllPosts = function(req) {
 	return Post.find()
 }
 ```
@@ -672,3 +673,16 @@ const changePost = function(req, res) {
 You can clean up the `utilities.js` and `utilities.test.js` to remove any require and exports that were related to our file-persisted implementation. The completed code can be found in the code-complete folder in this repository if you need some guidance.
 
 You can also remove the `.only` from utilities.test.js and make sure all of the tests are passing.
+
+## Challenge
+
+**Adding Validations**
+
+Validations can and should be added to a model's schema to help ensure that good data is provided by the client, and that appropriate messages are sent when there is a problem with the data.
+
+Look at the [documentation on validation for mongoose models](https://mongoosejs.com/docs/4.x/docs/validation.html), and add the following:
+
+1. Add a minimum length for blog post **content**, **username**, and **title**. Pick values you feel are appropriate.
+2. Add a maximum length for blog post **content**. Pick a value you feel is appropriate.
+3. Read the documentation to find out how you can customize the message when a built-in validation fails. The message we saw when we didn't include a username in the test for `addPost` was a bit strange: `Path`username`is required`. Specify a custom message for the required validations on the Post schema fields that is more user friendly.
+4. Add at least one test to utilities.test.js that tests positively that `addPost` fails when a required field is missing. This is called a negative test case, and they can be just as important as positive test cases. Use the [expect documentation](https://jestjs.io/docs/en/expect.html) if you need help choosing an assertion to do this. (There's an example of one way to do this in code-complete, but try to find a way on your own, or a different way).
