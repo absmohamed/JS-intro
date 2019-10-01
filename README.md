@@ -78,7 +78,6 @@ Each day there will be a new directory added with the code snippets used for the
 ## Day 17
 
 - [Express Intro](https://github.com/CoderAcademy-BRI/js-intro-lessons/tree/master/Express)
-- [Cookies](https://github.com/CoderAcademy-BRI/js-intro-lessons/tree/master/Cookies)
 
 ## Day 18
 
@@ -87,7 +86,12 @@ Each day there will be a new directory added with the code snippets used for the
 ## Day 19
 
 - [MongoDb](https://github.com/CoderAcademy-BRI/js-intro-lessons/tree/master/MongoDb)
+- [Mongoose](https://github.com/CoderAcademy-BRI/js-intro-lessons/tree/master/Mongoose)
 
 ## Day 20
 
-- [Authorization](https://github.com/CoderAcademy-BRI/js-intro-lessons/tree/master/Athorization)
+- [Cookies](https://github.com/CoderAcademy-BRI/js-intro-lessons/tree/master/Cookies)
+
+## Day 21
+
+- [Authorization]To be completed
