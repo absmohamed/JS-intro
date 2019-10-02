@@ -19,7 +19,7 @@ Mongoose is an ODM (object data modelling) node module that we will use to make 
   - [Using Post.create to implement CREATE](#using-postcreate-to-implement-create)
   - [Data validation for create](#data-validation-for-create)
   - [Using post.findbyIdAndRemove for DELETE](#using-postfindbyidandremove-for-delete)
-  - [Using Post.findOneAndUpdate for UPDATE](#using-postfindoneandupdate-for-update)
+  - [Using Post.findByIdAndUpdate for UPDATE](#using-postfindbyidandupdate-for-update)
   - [Challenge](#challenge)
 
 ## Resources
@@ -586,7 +586,7 @@ posts_controller.js
 const removePost = function(req, res) {
 	// deletePost returns a promise
 	deletePost(req.params.id)
-		.then(() => res.status(204))
+		.then(() => res.sendStatus(204))
 		.catch(err => {
 			res.status(500)
 			res.json({
@@ -596,15 +596,15 @@ const removePost = function(req, res) {
 }
 ```
 
-## Using Post.findOneAndUpdate for UPDATE
+## Using Post.findByIdAndUpdate for UPDATE
 
-Another useful mongoose helper function can be used for update. We need to pass three arguments to `Post.findOneAndUpdate`:
+Another useful mongoose helper function can be used for update. We need to pass three arguments to `Post.findbyIdAndUpdate`:
 
 - the id of the post document to update (in req.params.id)
 - the document object properties (in req.body)
 - an option `{new:true}`, which indicates we want the function to return the post document with the modifications (by default it returns the document prior to any modification)
 
-_Note that you may decide you want findOneAndUpdate to return the document prior to modification - it depends on your implementation. If so, just leave out the {new:true} option._
+_Note that you may decide you want findByIdAndUpdate to return the document prior to modification - it depends on your implementation. If so, just leave out the {new:true} option._
 
 utilities.js
 
@@ -615,7 +615,7 @@ const updatePost = function(req) {
 	// Set the modified_date to now on req.body
 	req.body.modified_date = Date.now()
 	// use new:true to return the updated post rather than the original post
-	return Post.findOneAndUpdate(req.params.id, req.body, {
+	return Post.findByIdAndUpdate(req.params.id, req.body, {
 		new: true
 	})
 }

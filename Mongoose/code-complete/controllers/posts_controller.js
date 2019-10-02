@@ -44,7 +44,7 @@ const makePost = function (req, res) {
 
 const removePost = function (req, res) {
     // deletePost returns a promise
-    deletePost(req.params.id).then(() => res.status(204))
+    deletePost(req.params.id).then(() => res.sendStatus(204))
         .catch((err) => {
             res.status(500);
             res.json({

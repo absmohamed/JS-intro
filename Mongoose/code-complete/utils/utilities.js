@@ -35,7 +35,7 @@ const deletePost = function (id) {
 const updatePost = function (req) {
     req.body.modified_date = Date.now();
     // use new:true to return the updated post rather than the original post
-    return Post.findOneAndUpdate(req.params.id, req.body, {
+    return Post.findByIdAndUpdate(req.params.id, req.body, {
         new: true
     });
 };
