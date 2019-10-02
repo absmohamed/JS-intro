@@ -1,51 +1,177 @@
-# Authentication
+# Authentication and Sessions
+
 We learned about authentication with Rails, where we used a gem called Devise. In Rails, we could have implemented our own authentication framework, but it makes sense to use one that has been provided by someone else in most cases.
 
+- [Authentication and Sessions](#authentication-and-sessions)
+  - [References](#references)
+  - [Express-session](#express-session)
+  - [Creating the User model](#creating-the-user-model)
+  - [Passport](#passport)
+  - [Authentication Methods](#authentication-methods)
+  - [Passport & Strategies](#passport--strategies)
+  - [passport-local-mongoose](#passport-local-mongoose)
+  - [Adding authentication to our blog application](#adding-authentication-to-our-blog-application)
+  - [Installing Passport](#installing-passport)
+  - [Adding authorization routes](#adding-authorization-routes)
+  - [The register route](#the-register-route)
+    - [passport.authenticate](#passportauthenticate)
+    - [Testing the register route](#testing-the-register-route)
+    - [Check that the user was created in the database](#check-that-the-user-was-created-in-the-database)
+  - [The login route](#the-login-route)
+  - [Testing the login route](#testing-the-login-route)
+  - [The logout route](#the-logout-route)
+  - [Testing the logout route](#testing-the-logout-route)
+  - [Using our shiny, new authentication](#using-our-shiny-new-authentication)
+  - [Adding the username from req.user on CREATE](#adding-the-username-from-requser-on-create)
+  - [Testing authentication](#testing-authentication)
+  - [Only allow blog post owner to delete and update](#only-allow-blog-post-owner-to-delete-and-update)
+  - [Challenges](#challenges)
+
 ## References
+
+- [express-session](https://github.com/expressjs/session)
 - [Passport](http://www.passportjs.org/)
+- [Understanding sessions and local authentication](https://mianlabs.com/2018/05/09/understanding-sessions-and-local-authentication-in-express-with-passport-and-mongodb/)
+- [passport-local-mongoose](https://github.com/saintedlama/passport-local-mongoose)
+- [express session and passport session](https://www.airpair.com/express/posts/expressjs-and-passportjs-sessions-deep-dive)
+
+## Express-session
+
+Before we get into authentication with Passport, we'll introduce another module we will need: `express-session`. This is used to help manage our server-client sessions and store session data on the server, and handles some of the work for us, such as:
+
+- sending server session cookies as httpOnly and signed by default
+- generating unique session ids for each client user session
+
+We can choose to set a `maxAge` for our session cookies, if for example we want to force a user to re-authenticate after some period of time.
+
+Install `express-session`:
+
+```
+npm i express-session
+```
+
+We can use the session property on any client request to store data that is particular to that client session. For example, we could use it to store how many times they have visited a particular url on our server, or whether or not the user associated with the session is authenticated.
+
+By default, this information is stored in memory on the server. This is typical for development, but not a good practice for production. In production, session data is either stored in one of these ways:
+
+- in a database (i.e., [Mongo](https://www.npmjs.com/package/connect-mongo)),
+- in the server file system (i.e., using [filestore](https://www.npmjs.com/package/session-file-store)),
+- using a memory-cache system (i.e., [Redis](https://www.npmjs.com/package/connect-redis) or [Memcached](https://www.npmjs.com/package/connect-memcached))
+
+The express-session github has a [list of many compatible store options](https://github.com/expressjs/session#compatible-session-stores)
+
+For now, we'll set up our app to use express-session with in memory storage. Add this to our app.js:
+
+app.js
+
+```javascript
+const session = require("express-session")
+
+app.use(
+	session({
+		// resave and saveUninitialized set to false for deprecation warnings
+		secret: "Express is awesome",
+		resave: false,
+		saveUninitialized: false
+	})
+)
+```
+
+Note that `secret` is the only required option for initialisation of the express-session. As mentioned, it's used to sign our cookies. The other two options shown are required to resolve some deprecation warnings.
+
+We'll get back to using this session after we learn some more about authentication with Passport.
+
+## Creating the User model
+
+We need to decide what we want to store in the user model other than a username and password. For our blog app, it might be useful to also store an email address. At some point, we may want to store other information, and if we do, we would add that to our User schema.
+
+For now, we'll assume having a username, email, and password is sufficent. So what should we add to our User model?
+
+Well as we'll learn, some middleware we'll be using, `passport-local-mongoose`, will add a `username`, a `salt` value used to encrypt and decrypt the password, and the hashed password (as `hash`). Remember that with MongoDB, we don't have to define every field in the schema up front - it is dynamic. We add fields to the schema when we want to use validation, enforce consistency, or enable testing. The only thing we need to add at this point to our schema is the email, and we'll make it required.
+
+models/user.js
+
+```javascript
+const mongoose = require("mongoose")
+const Schema = mongoose.Schema
+
+const User = new Schema({
+	email: {
+		type: String,
+		required: true
+	}
+})
+
+module.exports = mongoose.model("User", User)
+```
 
 ## Passport
-With the MERN stack, we will use a third party Express-based middleware called [Passport](http://www.passportjs.org/). Like we've already seen with Node and Express, we will have to do more configuration, even when we use a module like Passport, to set up our application authentication, but it does provide some useful functionality while still allowing the flexibility we need to create authentication for any particular application. 
 
+With the MERN stack, we will use a third party Express-based middleware called [Passport](http://www.passportjs.org/). Like we've already seen with Node and Express, we will have to do more configuration, even when we use a module like Passport, to set up our application authentication, but it does provide some useful functionality while still allowing the flexibility we need to create authentication that suits any particular application.
 
 ## Authentication Methods
-There are many different kinds of authentication methods being used.
 
-* Local or Basic Authentication - username & password
-* Tokens (for example, JSON Web Tokens or JWT) - unique token string sent in the header
-* OAuth (Open Authorization) - Think login via Facebook or Google
+There are many different kinds of authentication methods being used today:
+
+- Local or Basic Authentication - username & password
+- Tokens like JSON Web Tokens (JWT) - unique token string sent in the header
+- OAuth (Open Authorization) - Think login via Facebook or Google
+
+For our blog app, we'll use basic authentication for now.
 
 ## Passport & Strategies
 
-Passport provides support for many authentication methods through modules called [strategies](http://www.passportjs.org/packages/). Strategies are simply different types of authentication methods. When we use Passport, we will specify which authentication strategies we want to use.
+Passport provides support for many authentication methods through modules called [strategies](http://www.passportjs.org/packages/). Strategies are simply different types of authentication methods. When we use Passport, we will specify which authentication strategies we want to use. We will use the `local` strategy for basic authentication.
+
+## passport-local-mongoose
+
+`passport-local-mongoose` takes care of salting and hashing user passwords, serializing and deserializing the user model (for session storage), and authenticating the username and password credentials with their stored counterparts in the mongo database. If we didn't use this, we would have to implement all of these things manually. Middleware is good.
+
+Additionally, this middleware adds some static methods to our user schema that make life much easier:
+
+- createStrategy() - sets up passport-local LocalStrategy with the correct options
+- authenticate() Generates a function that is used in Passport's LocalStrategy (which will take care of validating user credentials)
+- serializeUser() Generates a function that is used by Passport to serialize users into the session
+- deserializeUser() Generates a function that is used by Passport to deserialize users into the session
+- register(user, password, cb) Convenience method to register a new user instance with a given password. Checks if username is unique.
+- findByUsername() Convenience method to find a user instance by unique username.
 
 ## Adding authentication to our blog application
-In this lesson, we'll add authentication to our blog application using Passport. The code from previous lessons is in the **code** directory.
+
+In this lesson, we'll add authentication to our blog application using Passport. The code from previous lessons is in the **code** directory and we'll start there.
 
 ## Installing Passport
+
 To use Passport we first need to install it. From the app project directory, install Passport and add it as a dependency.
 
 ```
 npm i passport
 ```
 
-**Local Strategy**
+**Passport - Local Strategy**
 
-At the time of this writing Passport has 502 different strategies. The one we will need to use to replace our custom authentication mechanism is passport-local. Passport-local uses a username and password for authentication, which is perfect for us. Lets install it.
+At the time of this writing Passport has 502 different strategies. The one we will need to provide a basic authentication mechanism is `passport-local`. Passport-local uses a username and password for authentication, which is perfect for us.
+
+Let's install it:
 
 ```
-npm install passport-local --save
+npm i passport-local
 ```
 
-Now that we have the local strategy downloaded lets set it up. According to the passport documentation we need to define some methods on the passport object. The problem is where to place these methods. Lets create a new directory called config where we will have a passport.js file to hold all this configuration.
+We'll also install `passport-local-mongoose` to make our lives easier:
+
+```
+npm i passport-local-mongoose
+```
+
+Now that we have the local strategy downloaded lets set it up. According to the passport documentation we need to define some methods on the passport object - pariticularly we need to define the strategy, and tell passport how to serialize and deserialize users so it can add the user information to the session. The problem is where to place these methods. Lets create a new directory called config where we will have a passport.js file to hold all this configuration.
 
 directory
 
 ```
 app.js
-index.js
 ├── config
-    └── passport
+    └── passport.js
 ```
 
 Ok lets setup passport.
@@ -53,596 +179,522 @@ Ok lets setup passport.
 passport.js
 
 ```javascript
-const passport = require("passport");
-const LocalStrategy = require("passport-local");
-const UserModel = require("./../database/models/user_model");
+const passport = require("passport")
+const User = require("../models/user")
 
-passport.use(new LocalStrategy({
-        usernameField: "email"
-    },
-    async (email, password, done) => {
-        const user = await UserModel.findOne({ email })
-            .catch(done);
+passport.use(User.createStrategy())
 
-        if (!user || !user.verifyPasswordSync(password)) {
-            return done(null, false);
-        }
-
-        return done(null, user);
-    }
-));
+passport.serializeUser(User.serializeUser())
+passport.deserializeUser(User.deserializeUser())
 ```
 
-Here we are setting up the local strategy and passing it into passport. The default fields passport-local looks for when logging in a user is username and password but in our example we have email and password so we need to tell passport-local to look for this field instead. Next we have a callback function which verifies the users login credentials. Just like **next()** in our middleware passport uses done() to move on.
+Here we are using `passport-local-mongoose` to set up the local strategy and tell `passport` to use it.
 
-Next we need to actually connect passport to our application.
+We are also taking advantage of the `serializeUser` and `deserializeUser` functions provided by `passport-local-mongoose`, and configuring `passport` to use those.
+
+In order for all of this `passport-local-mongoose` goodness to work, we have to add one more thing to our `model/user.js` file - we have to _plugin_ our `passport-local-mongoose` middleware with our User schema:
+
+user.js
+
+```javascript
+// plugin the passport-local-mongoose middleware with our User schema
+User.plugin(passportLocalMongoose)
+```
+
+Next we need to actually connect passport to our application. To do this, we need to initialize passport, and make it use the express-session. Before we initialize passport, we need to execute the passport configuration we put in `config/passport.js`. This is what we add to app.js to do all of these things:
 
 app.js
 
 ```javascript
-const express = require("express");
-const exphbs = require("express-handlebars");
-const morgan = require("morgan");
-const expressSession = require("express-session");
-const MongoStore = require('connect-mongo')(expressSession);
-const mongoose = require('mongoose');
-const passport = require("passport");
-const app = express();
-
-app.engine("handlebars", exphbs({defaultLayout: "main"}));
-app.set("view engine", "handlebars");
-
-app.use(expressSession({
-    secret: process.env.SESSION_SECRET,
-    resave: false,
-    saveUninitialized: false,
-    cookie: {
-        expires: 600000
-    },
-    store: new MongoStore({ mongooseConnection: mongoose.connection })
-}));
-
-app.use(express.urlencoded({ extended: false }));
-app.use(express.json());
-
-require("./config/passport");
-app.use(passport.initialize());
-app.use(passport.session());
-
-app.use(morgan("combined"));
-
-app.use(require("./routes"));
-
-app.use(express.static("public"));
-
-app.use(require("./middleware/error_handler_middleware"));
-
-module.exports = app;
+require("./config/passport")
+app.use(passport.initialize())
+app.use(passport.session())
 ```
 
-Ok so in this file we are requiring our passport setup from the config/passport.js file then passing passport to our application as a middleware with **passport.initialize()**. We use passport.session() when we want passport to keep track of our logged in user 
+It's important that these three lines go AFTER we tell our app to use the express-session. You can look at the `app.js` in the code-complete directory if you are unsure of where to put this code.
 
-So we have passport configured and bound to our application. Now lets actually use it within the login route.
+Ok so in this file we are requiring our passport setup from the `config/passport.js` file then passing passport to our application as a middleware with **passport.initialize()**. We use **passport.session()** when we want passport to keep track of our logged in user. **But don't be confused - passport.session is the same as our express-session**. There are not two session objects - only one. Passport just uses the express-session to store authenticated user information (specifically the username). We'll log the session once we've implemented authentication so you can see this.
 
-index.js
+So we have passport configured and bound to our application.
+
+## Adding authorization routes
+
+Now we can add some authorization routes to our application. We will need three routes:
+
+- register (POST because we need to send user data)
+- login (POST because we need to send user data)
+- logout (GET because we use the user data stored in the session for logout and don't send any data)
+
+To prepare, we'll create 2 new files:
+
+```
+├── controllers
+    └── auth_controller.js
+├── routes
+    └── auth_routes.js
+```
+
+We will put the logic directly in our `auth_controller.js` for the authorization routes.
+
+## The register route
+
+To implement the register route logic in the auth_controller.js, we will use some of the passport-local-mongoose helper functions. We will need to require both passport and our User model:
+
+auth_controller.js
 
 ```javascript
-router.post("/login", celebrate({
-    body: {
-        email: Joi.string().required(),
-        password: Joi.string().required()
-    }
-}), 
-passport.authenticate('local', {
-        successRedirect: "/dashboard",
-        failureRedirect: "/login"
-}));
+const passport = require("passport")
+const User = require("../models/user")
+
+const register = function(req, res) {
+	User.register(
+		new User({
+			username: req.body.username,
+			email: req.body.email
+		}),
+		req.body.password,
+		function(err) {
+			if (err) {
+				res.status(500)
+				res.json({
+					error: err
+				})
+			} else {
+				// Log in the newly registered user
+				// passport.authenticate returns a function that we will call with req, res, and a callback function to execute on success
+				passport.authenticate("local")(req, res, function() {
+					console.log(`authenticated ${req.user.username}`)
+					res.status(200)
+					res.json(req.user)
+				})
+			}
+		}
+	)
+}
+
+module.exports = { register }
 ```
 
-Now when we fail to login (like if we use the wrong credentials) then passport will automatically redirect back to /login and if we are successful it will redirect us to /dashboard. Lets give it a try. Uh oh, looks like we got an error. We missed an important part of the passport setup. Because we are using sessions passport wants to know what we want to store in our session if the user is validated and how to use that information to retrieve our user from the database. Lets finish the setup.
+There's a lot going on here, so let's break it down.
 
-passport.js
+As mentioned above in the description of `passport-local-mongoose`, the `register` helper function provided on the User schema takes three parameters - a user object, password, and a callback function that will be executed once the user is registered.
+
+In the code above, we are:
+
+- creating the user for the first parameter using the username and email in req.body by calling User.create
+- passing the password from req.body as the second parameter
+- defining an anonymous callback function for the third parameter
+
+In the callback function, if we receive an error, we send it back in the response with a `500` status and the error message. Otherwise, we authenticate the user (we could require the user to log in explicitly after the register step instead).
+
+### passport.authenticate
+
+In the call to `passport.authenticate`, we pass the strategy, 'local', and it **returns a function**. We call that authenticate function that is returned with three parameters: req, res, and a callback function. When the callback function is executed, the user has been authenticated by passport and added to the request as `req.user`. If authentication fails, passport sends back a `401` status (Unauthorized) and does not execute the callback function.
+
+In the callback function, we set status to 200, and send back the user object from `req.user`. At this point, we'll be able to see that passport is storing the username in the express-session.
+
+Now to add the route in auth_routes.js. We will have to require express, express.Router, and auth_controller:
+
+auth_routes.js
 
 ```javascript
-const passport = require("passport");
-const LocalStrategy = require("passport-local");
-const UserModel = require("./../database/models/user_model");
+const express = require("express")
+const router = express.Router()
+const { register } = require("../controllers/auth_controller")
 
-passport.serializeUser((user, done) => {
-    done(null, user._id);
-});
+router.post("/register", register)
 
-passport.deserializeUser(async (id, done) => {
-    try {
-        const user = await UserModel.findById(id);
-        done(null, user);
-    } catch (error) {
-        done(error);
-    }
-});
-
-passport.use(new LocalStrategy({
-        usernameField: "email"
-    },
-    async (email, password, done) => {
-        const user = await UserModel.findOne({ email })
-            .catch(done);
-        if (!user || !user.verifyPasswordSync(password)) {
-            return done(null, false);
-        }
-        return done(null, user);
-    }
-));
+module.exports = router
 ```
 
-The **serializeUser()** method stores information inside of our session relating to the passport user. We can see this if we go to the mongo shell.
+To complete this, we'll tell our app to use this router for '/auth' routes (and we'll have to add a require statement to app.js to bring in that router):
+
+app.js
+
+```javascript
+const authRouter = require("./routes/auth_routes")
+app.use("/auth", authRouter)
+```
+
+Now we can test it! We will test manually with Postman, because testing with passport is tricky and is a lesson for another time.
+
+First test - does the server run? Try it with `npm start`. If there are any problems, try to figure it out and get help if you need it. The completed code is available in code-complete if you get really stuck.
+
+### Testing the register route
+
+From Postman, set up a POST request on `http://localhost:3000/auth/register`. What will you have to put in the body?
+
+![Using postman to test register](img/postman-register.png)
+
+If everything is working, we should get the user object back in the response.
+
+![Response from register in Postman](img/postman-register-response.png)
+
+Notice that our User object has a username, email, salt, and hash field (the other two fields are added by mongo for it's purposes, including the unique \_id).
+
+### Check that the user was created in the database
+
+From a terminal window, run the mongo shell and verify the `user` collection was created in the `blog_app` database, and that it now has a document for our test user:
 
 ```
 mongo
-use session-auth
-db.sessions.find();
+> use blog_app
+> show collections
+posts
+users
+> db.users.find()
 ```
 
-We see a new property in our document name passport and within that we have the user id of the logged in user. The deserializeUser() method gives us access to the information stored within the passport.user property of our session and allows us to return back data (in this case the user from the database) that will be appended to **req.user.**
+![test user in mongo](img/test_user_in_mongo.png)
 
-Lets make sure this is working by sending back the value of req.user inside of our index method.
+## The login route
 
-controllers/page_controller.js
+We've already written code to implement the logic for the login route - it's in register already (passport.authenticate). We'll pull it out into a helper function to keep our code dry, and add a log of the session object so we can see what is added by passport when a user is authenticated:
+
+auth_controller.js
 
 ```javascript
-function index(req, res) {
-    res.json(req.user);
-    // req.session.views = req.session.views ? req.session.views + 1 : 1;
-    // res.json(req.session.views);
+const authenticate = passport.authenticate("local")
+// helper function
+function loginUser(req, res) {
+	authenticate(req, res, function() {
+		console.log("authenticated", req.user.username)
+		console.log("session object:", req.session)
+		res.status(200)
+		res.json(req.user)
+	})
 }
 ```
 
-And its working! So the only reason we are unable to go to /dashboard at the moment is because we need to change our validation middleware. Lets update it to no longer looks for req.session.user but instead just make sure we have req.user.
+Now replace the code in the register function with a call to this helper function:
 
-authorisation_middleware.js
+auth_controller.js
 
 ```javascript
-function authRedirect(req, res, next) {
-    if (req.user) {
-        return res.redirect("/dashboard");
-    }
-
-    return next();
+const register = function(req, res) {
+	User.register(
+		new User({
+			username: req.body.username,
+			email: req.body.email
+		}),
+		req.body.password,
+		function(err) {
+			if (err) {
+				res.status(500)
+				res.json({
+					error: err
+				})
+			} else {
+				loginUser(req, res)
+			}
+		}
+	)
 }
+```
 
-function authorise(req, res, next) {
-    if (req.user) {
-        return next();
-    }
+And we can use the same helper function to define our login route logic:
 
-    return res.redirect("/");
+auth_controller.js
+
+```javascript
+const login = function(req, res) {
+	loginUser(req, res)
+}
+```
+
+Add the login function to the exports:
+
+auth_controller.js
+
+```javascript
+module.exports = {
+	register,
+	login
+}
+```
+
+Add the POST login route to auth_routes.js:
+
+auth_routes.js
+
+```javascript
+const { register, login } = require("../controllers/auth_controller")
+
+router.post("/register", register)
+router.post("/login", login)
+```
+
+And now we can test it!
+
+## Testing the login route
+
+Again we'll test manually with Postman. We can use the same setup we just used to register the test user, and just change the url to `http://localhost:3000/auth/login`:
+
+![Using Postman to test login](img/postman-login.png)
+
+If everything goes well, the user object will be sent back.
+
+![Reponse from login on Postman](img/postman-register-response.png)
+
+You should see this in the console in the terminal where the server is running:
+
+![Log of session object on the server](img/console-log-session-object.png)
+
+This item was added by passport to the session:
+
+```
+passport: {user: 'tester_bob'}
+```
+
+## The logout route
+
+The last route to implement is the simplest. Passport provides a helper function on the request object that can be used to remove the user information from the session, which essentially logs out the user: `req.logout()`.
+
+Add this to auth_controller.js:
+
+```javascript
+const logout = function(req, res) {
+	req.logout()
+	console.log("session object:", req.session)
+	res.sendStatus(200)
+}
+```
+
+We'll log the session object so we can see how it changes when we log a user out.
+
+Update the exports in auth_controller.js:
+
+```javascript
+module.exports = {
+	register,
+	login,
+	logout
+}
+```
+
+Then add the route to auth_routes.js:
+
+```javascript
+const express = require("express")
+const router = express.Router()
+const { register, login, logout } = require("../controllers/auth_controller")
+
+router.post("/register", register)
+router.post("/login", login)
+router.get("/logout", logout)
+
+module.exports = router
+```
+
+## Testing the logout route
+
+Using Postman, test logout. Since we've made code changes and the server has restarted, we will have to log our test user in again first, then log out.
+
+After we log in, we can see the user is in the session object if we look at the server console log:
+
+![Log of session object on the server](img/console-log-session-object.png)
+
+In Postman, send a GET request to the logout url:
+
+![test logout with Postman](img/postman-test-logout.png)
+
+We should get a 200 status back, and the passport attribute is removed from the session as shown in the server console log:
+
+![session object after logout](img/console-log-session-logout.png)
+
+## Using our shiny, new authentication
+
+Now we can authenticate users! Let's put that feature to work. In our blog app, we should only allow a user to make, change, or delete a post if they are authenticated.
+
+We will add a piece of middleware to our posts_controller.js that will determine if we have an authenticated user in the session. We can use a helper method called `isAuthenticated()`, provided by passport on the request object. If it returns true, we'll call next(), and if not, we'll send a 403 (Forbidden) status:
+
+posts_controller.js
+
+```javascript
+const userAuthenticated = function(req, res, next) {
+	if (req.isAuthenticated()) {
+		return next()
+	} else {
+		res.sendStatus(403)
+	}
+}
+```
+
+To use this middleware, we need to export it from posts_controller.js:
+
+```javascript
+module.exports = {
+	getPosts,
+	getPost,
+	makePost,
+	removePost,
+	changePost,
+	userAuthenticated
+}
+```
+
+We'll import it to posts_routes.js so we can use it. We could add it to each of the three routes individually like this:
+
+posts_routes.js
+
+```javascript
+// CREATE
+// POST on '/posts'
+// Creates a new post
+router.post("/", userAuthenticated, makePost)
+
+// DELETE
+// DELETE on '/posts/:id'
+// Deletes a post with id
+router.delete("/:id", userAuthenticated, removePost)
+
+// UPDATE
+// PUT on 'posts/:id'
+// Updates a post with id
+router.put("/:id", userAuthenticated, changePost)
+```
+
+Alternatively, we could just use it once, before the routes where we want it applied:
+
+posts_routes.js
+
+```javascript
+const express = require("express")
+const router = express.Router()
+const {
+	getPosts,
+	getPost,
+	makePost,
+	removePost,
+	changePost,
+	userAuthenticated
+} = require("../controllers/posts_controller")
+
+// READ
+// GET on '/posts'
+// Returns all posts
+router.get("/", getPosts)
+
+// READ
+// GET on '/posts/:id'
+// Returns post with given id
+router.get("/:id", getPost)
+
+// For post, delete, put -require authenticated user
+router.use(userAuthenticated)
+// CREATE
+// POST on '/posts'
+// Creates a new post
+router.post("/", makePost)
+
+// DELETE
+// DELETE on '/posts/:id'
+// Deletes a post with id
+router.delete("/:id", removePost)
+
+// UPDATE
+// PUT on 'posts/:id'
+// Updates a post with id
+router.put("/:id", changePost)
+
+module.exports = router
+```
+
+The result of doing this is that the GET routes for `/posts` will not use the middleware, but all of the routes defined after the `use` statement (CREATE, DELETE, and UPDATE routes) will use it.
+
+## Adding the username from req.user on CREATE
+
+Right now, we are assuming the username comes from the client when we create a blog post, but this isn't quite right. We should get the username from the currently logged in user. This is a simple change in `makePost` in `posts_controller.js`:
+
+posts_controller.js
+
+```javascript
+const makePost = function(req, res) {
+	// add the username from the session
+	req.body.username = req.user.username
+	// addPost returns a promise
+	addPost(req)
+		.then(post => {
+			res.status(201)
+			res.send(post)
+		})
+		.catch(err => {
+			res.status(500)
+			res.json({
+				error: err.message
+			})
+		})
+}
+```
+
+## Testing authentication
+
+To test this, first verify that our GET routes for `/post` work even if a user is not authenticated. You can logout first, but if you made code changes, the server would have restarted and no user is authenticated anyway.
+
+After you prove to yourself that the GET routes for `/post` work, try to create a post without logging in first. This should fail in Postman:
+
+![test that create post is forbidden without login](img/postman-test-create-forbidden.png)
+
+Delete and update should produce the same result.
+
+Now login, and try again. This should succeed. Remember to leave the username out of the request body in Postman, and verify it is set by the posts_controller from the session (even if you specify username in the request body in Postman, it should just be overwritten by the posts_controller).
+
+![test successful create when authenticated](img/test-create-succeeds-with-login.png)
+
+Awesome!
+
+We're nearly done, but there is one more thing to handle. We want any authenticated user to be able to create a blog post, but only the owner of a post should be able to update or delete it, so we need to add some handling for this.
+
+## Only allow blog post owner to delete and update
+
+We can accomplish this using another piece of middleware in posts_routes.js that we will define in posts_controller.js. The middleware will get the post from the id passed to DELETE, and make sure the post.username matches the req.user.username (or we could check it against req.session.user - these should be the same).
+
+posts_controller.js
+
+```javascript
+const verifyOwner = async function(req, res, next) {
+	// If post owner isn't currently logged in user, send forbidden
+	// Use our existing utilties function to get the post
+	getPostById(req)
+		.then(post => {
+			if (req.user.username !== post.username) {
+				res.sendStatus(403)
+			}
+			next()
+		})
+		.catch(err => {
+			res.status(404)
+			res.send("Post not found")
+		})
 }
 
 module.exports = {
-    authRedirect,
-    authorise
+	getPosts,
+	getPost,
+	makePost,
+	removePost,
+	changePost,
+	userAuthenticated,
+	verifyOwner
 }
 ```
 
-Ok so now we can get to /dashboard but we need to update our logic to look for the email on req.user and not req.session.user again.
+Now use the middleware in posts_routes.js. We will have to use the middleware directly in the route implementations or params.id won't be set on the request object (make sure you remember to add it to the require statement for posts_controller):
 
-page_controller.js
-
-```javascript
-function dashboard(req, res) {
-    const email = req.user.email;
-    console.log("yes");
-    res.render("pages/dashboard", { email });
-}
-```
-
-Awesome! Now its all working. Lets add in the logout functionality. Now currently our logout() function is still working however we are losing the views information because we are destroying the entire session. Instead of destroying the whole session lets use a method that passport gives us that only destroys its part of the session.
-
-authentication_controller.js
+posts_routes.js
 
 ```javascript
-function logout(req, res) {
-    req.logout();
-    res.redirect("/");
-}
+// DELETE
+// DELETE on '/posts/:id'
+// Deletes a post with id
+router.delete("/:id", verifyOwner, removePost)
+
+// UPDATE
+// PUT on 'posts/:id'
+// Updates a post with id
+router.put("/:id", verifyOwner, changePost)
 ```
 
-Now when we logout we are not destroying the whole session. We can see this working if we turn our index() function back to displaying our page views.
+That should do it. Test that if you create a post with a logged in user, you can update and delete that post. Also test that if you try to delete or update a post that was created by another user, you cannot update or delete it.
 
-page_controller.js
-
-```javascript
-function index(req, res) {
-    req.session.views = req.session.views ? req.session.views + 1 : 1;
-    res.json(req.session.views);
-}
-```
-
-And yes its working. Last but not least we need to modify our code so that when a new user registers we create the user and then log them in.
-
-authentication_controller.js
-
-```javascript
-async function registerCreate(req, res, next) {
-    const { email, password } = req.body;
-    const user = await UserModel.create({ email, password });
-    
-    req.login(user, (err) => {
-        if (err) {
-            return next(err);
-        }
-
-        res.redirect("/dashboard");
-    });
-}
-```
-
-**JWT Strategy**
-
-Ok now that we have finished up using passport for our local strategy lets implement another authentication method name JWT (JSON Web Tokens).  JSON web tokens is an authentication standard that works by assigning and passing around an encrypted token in requests that helps to identify the logged in user, instead of storing the user in a session on the server and creating a cookie.
-
-Lets modify our application to use JSON web tokens instead of relying on the user_id stored within the session. First thing that we need to do is install the passport-jwt strategy. 
-
-```
-npm install passport-jwt --save
-```
-
-Now lets setup the strategy.
-
-passport.js
-
-```javascript
-const passport = require("passport");
-const LocalStrategy = require("passport-local");
-const UserModel = require("./../database/models/user_model");
-const { Strategy: JwtStrategy, ExtractJwt } = require("passport-jwt");
-
-passport.serializeUser((user, done) => {
-    done(null, user._id);
-});
-
-passport.deserializeUser(async (id, done) => {
-    try {
-        const user = await UserModel.findById(id);
-        done(null, user);
-    } catch (error) {
-        done(error);
-    }
-});
-
-passport.use(new LocalStrategy({
-        usernameField: "email",
-        session: false
-    },
-    async (email, password, done) => {
-        const user = await UserModel.findOne({ email })
-            .catch(done);
-
-        if (!user || !user.verifyPasswordSync(password)) {
-            return done(null, false);
-        }
-
-        return done(null, user);
-    }
-));
-
-passport.use(new JwtStrategy({
-        jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),
-        secretOrKey: process.env.JWT_SECRET
-    },
-    async (jwt_payload, done) => {
-        const user = await UserModel.findById(jwt_payload.sub)
-            .catch(done);
-
-        if (!user) {
-            return done(null, false);
-        }
-
-        return done(null, user);
-    }
-));
-```
-
-Awesome now that the strategy is setup all we need to do is send the user this token when they login so they can use it to authenticate themselves elsewhere in the application. Lets do that now.
-
-routes/index.js
-
-```javascript
-router.post("/login", celebrate({
-    body: {
-        email: Joi.string().required(),
-        password: Joi.string().required()
-    }
-    }), passport.authenticate('local', {
-        failureRedirect: '/login',
-    session: false
-}), AuthenticationController.loginCreate);
-```
-
-We have modified our login route so that when a user successfully is validated using the local strategy it no longer stores that user within the session. Instead it call the AuthenticationController.loginCreate() method where we are going to generate a JSON web token and send it back to the user. Now I don’t know about you but I have no idea how to create a JWT on my own so lets install another library that can generate our JWT’s for us.
-
-```
-npm install jsonwebtoken --save
-```
-
-Now on our authentication controller lets create the loginCreate() method to generate a JWT and send that back to the user.
-
-authentication_controller.js
-
-```javascript
-const UserModel = require("./../database/models/user_model");
-const jwt = require("jsonwebtoken");
-
-function registerNew(req, res) {
-    res.render("authentication/register");
-}
-
-async function registerCreate(req, res, next) {
-    const { email, password } = req.body;
-    const user = await UserModel.create({ email, password });
-    req.login(user, (err) => {
-        if (err) {
-            return next(err);
-        }
-
-        res.redirect("/dashboard");
-    });
-}
-
-function logout(req, res) {
-    req.logout();
-    res.redirect("/");
-}
-
-function loginNew(req, res) {
-    res.render("authentication/login");
-}
-
-function loginCreate(req, res) {
-    const token = jwt.sign({ sub: req.user._id }, process.env.JWT_SECRET);
-    res.json(token);
-}
-
-module.exports = {
-    registerNew,
-    registerCreate,
-    logout,
-    loginNew,
-    loginCreate
-}
-```
-
-Awesome now when we login we get back a valid JSON web token. Lets use this JSON web token to access /dashboard. All we need to do is change the routes authorisation middleware from authorise to
-
-```javascript
-router.get("/dashboard", passport.authenticate('jwt', {session: false}), PageController.dashboard);
-```
-
-Now passport is going to use its JWT strategy to authorise our user. However we are not able to just go to /dashboard now. Instead we see a 401 unauthorised message. That is because of this line in our jwt strategy.
-
-```javascript
-jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),
-```
-
-This is telling our strategy to look in our headers for one name authorization that has a value of Bearer {token}. We can see this if we go to Postman.
-
-*Do this same request in your Postman. Just replace the string after Bearer (eg: eyjhbGc….) with your JSON web token*
-
-![Screenshot of Postman request](./images/day75-postman.png) 
-
-Now this is completely fine and standard bevaviour if we were using our Express server as an API only but we can’t set custom headers for GET requests in the browser (We can only do this by using http request libraries).
-
-*What data does get sent along to our server as a header every single request?*
-
-A cookie! So in this scenario if we wanted to continue using JWT we could set the token as a cookie. Lets first make sure we are setting the jwt token as a cookie when we login.
-
-authentication_controller.js
-
-```javascript
-function loginCreate(req, res) {
-    const token = jwt.sign({ sub: req.user._id }, process.env.JWT_SECRET);
-    res.cookie("jwt", token);
-    res.redirect("/dashboard");
-}
-```
-
-Here we are setting our JWT token as a cookie name JWT. Now the only thing left to do is update our extractor function to look for a cookie named jwt. To make this even easier first lets install the cookie parser middleware.
-
-```
-npm install cookie-parser --save
-```
-
-And then add it as app level middleware
-
-app.js
-
-```javascript
-const cookieParser = require("cookie-parser");
-app.use(cookieParser());
-```
-
-Now that we can easily parse cookies lets update our jwt extractor function.
-
-passport.js
-
-```javascript
-passport.use(new JwtStrategy(
-    {
-        jwtFromRequest: (req) => {
-            let token = null;
-            
-            if (req && req.cookies) {
-                token = req.cookies['jwt'];
-            }
-
-            return token;
-        },
-        secretOrKey: process.env.JWT_SECRET
-    },
-    async (jwt_payload, done) => {
-        const user = await UserModel.findById(jwt_payload.sub)
-            .catch(done);
-
-        if (!user) {
-            return done(null, false);
-        }
-
-        return done(null, user);
-     }
-));
-```
-
-Awesome now we can view “/dashboard”. The last thing is when we logout the cookie is not being removed. Lets fix that now.
-
-authentication_controller.js
-
-```javascript
-function logout(req, res) {
-    req.logout();
-    res.cookie("jwt", null, { maxAge: -1 });
-    res.redirect("/");
-}
-```
-
-Now we can actually logout! Remember we can remove cookies from our browser by setting it expiration date to sometime in the past.
-
-**OAuth Strategy**
-
-Now that we are masters of the local strategy and using JSON web tokens lets talk about one other authentication method that is very popular. That is OAuth (Open Authorisation). OAuth allows us to authorise our users by using a trusted 3rd party source. You may have seen things on the web like signing with Google or Facebook. These are examples of OAuth.
-
-Now before we can actually setup OAuth in our application we must first create a new application on the OAuth provider itself. We have to do this so that the OAuth provider knows what kind of information the user is allowing us from their service. It will also generate an API key and secret we will need to pass to the OAuth provider to verify our application as well.
-
-For this lesson we will setup OAuth using Google but it is a very similar process for any other provider as well. So as mentioned above the first thing we will need to do is create a new Google application we can do this from their developers console.
-
-https://console.developers.google.com
-
-```
-//Need to put video or article in here for setting up Google Application for OAuth
-//Create new project
-//Enable Google+ API
-//Create Credentials
-//Download Credentials
-```
-
-Now that we have our client id and secret place those within your .env file. After that we can move on to setting up OAuth strategy but before we can do that we must download the strategy.
-
-```
-npm install passport-google-oauth20 --save
-```
-
-Now to do the strategy.
-
-passport.js
-
-```javascript
-const GoogleStrategy = require('passport-google-oauth20').Strategy;
-
-passport.use(new GoogleStrategy(
-    {
-        clientID: process.env.GOOGLE_CLIENT_ID,
-        clientSecret: process.env.GOOGLE_CLIENT_SECRET,
-        callbackURL: "http://localhost:3000/oauth/google/callback"
-    },
-    async (accessToken, refreshToken, profile, done) => {
-        if (profile.emails && profile.emails.length > 0) {
-            const user = await UserModel.findOne({ email: profile.emails[0].value })
-                .catch(done);
-
-            if (!user) {
-                return done(null, false);
-            }
-
-            return done(null, user);
-        }
-
-        return done(null, false);
-    }
-));
-```
-
-The Google OAuth strategy needs the client id and the client secret to verify your application. Then within the callback function we get access to the accessToken and refreshToken which we don’t really care about in our scenario. The thing we care about is the profile and the email address contained within it. We use this email to search our own database and auto login the user since Google has already verified them.
-
-Next we need to setup our routes. We need one route to direct us to Google OAuth for us to login and then we need another route that Google will call once the user has been verified (this is referred to as a redirect or callback route). Lets set those up.
-
-routes/index.js
-
-```javascript
-router.get('/oauth/google', passport.authenticate('google', { scope: ['profile', 'email'] }));
-
-router.get('/oauth/google/callback',
-    passport.authenticate('google', {
-        failureRedirect: '/login',
-        session: false
-    }),
-    AuthenticationController.loginCreate
-);
-```
-
-The first route is what we will use to connect with Google. The scope option is what Google will ask the user if it wants to give use permission to those things. The second route is the callback route Google will use once a user is verified to pass data back into our application. Let improve our user experience so that a user only needs to click a button to login via google.
-
-login.handlebars
-
-```javascript
-<div>
-    <a href="/oauth/google">
-        <button>Login via Google</button>
-    </a>
-</div>
-```
-
-Awesome! Now we have OAuth setup within our application!
-
-**Security Improvements**
-
-So you thought we were done huh. Almost but not quite. Lets think about what we have done. We are creating a JSON web token that never expires, storing it within a cookie and then using that token to verify our user.
-
-*In this process what could we do to improve the security of our application?*
-
-* Expire JWT
-* Do not store JWT in a cookie
-
-So the two things we could improve upon in our application is expiring the JWT. Our JWT is basically a very strong password and if someone where to get ahold of that token then they could authorise themselves as us and thats not a good thing. Which brings me to the second security improvement is storing that JWT within a cookie. Cookies are not a secure place to store any information! Now the web has gotten a lot better about securing our cookies but still they should not be trusted. 
-
-*So if we want to expire our token and not store it within the cookie itself what could we do?*
-
-How about we use the session! Lets modify our code to store our JWT within the session instead of directly in the cookie.
-
-*See if the class can modify the code to use the session instead of the cookie.*
-
-passport.js
-
-```javascript
-passport.use(new JwtStrategy(
-    {
-        jwtFromRequest: (req) => {
-            if (req.session && req.session.jwt) {
-                return req.session.jwt;
-            }
-            return null;
-        },
-        secretOrKey: process.env.JWT_SECRET
-    },
-    async (jwt_payload, done) => {
-        const user = await UserModel.findById(jwt_payload.sub)
-            .catch(done);
-
-        if (!user) {
-            return done(null, false);
-        }
-
-        return done(null, user);
-    }
-));
-```
-
-authentication_controller.js
-
-```javascript
-function loginCreate(req, res) {
-    const token = jwt.sign({ sub: req.user._id }, process.env.JWT_SECRET);
-    req.session.jwt = token;
-    res.redirect("/dashboard");
-}
-```
-
-There we go. Now we are using the session to store the token instead of the cookie. Which is way more secure and the session has an expiration which also takes care of expiring our token.
+## Challenges
