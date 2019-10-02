@@ -4,8 +4,8 @@ const Post = require('../models/post');
 
 // get all posts
 // return a promise
-const getAllPosts = async function (req) {
-    return filter(req.query);
+const getAllPosts = function (req) {
+    return Post.find();
 };
 
 // get post by id
@@ -27,7 +27,7 @@ const addPost = function (req) {
 // delete post
 // returns a promise
 const deletePost = function (id) {
-    return Post.findOneAndRemove(id);
+    return Post.findByIdAndRemove(id);
 };
 
 // update post
@@ -39,21 +39,6 @@ const updatePost = function (req) {
         new: true
     });
 };
-
-// Local helper functions
-
-// filters data based on category
-async function filter(queryParams) {
-    let filteredPosts = {};
-    let query = {};
-    if (queryParams.category && queryParams.category.length > 0) {
-        query = {
-            category: queryParams.category
-        };
-    }
-    filteredPosts = await Post.find(query);
-    return filteredPosts;
-}
 
 module.exports = {
     getAllPosts,

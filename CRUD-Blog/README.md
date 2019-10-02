@@ -140,7 +140,7 @@ blog_posts.json
     "title": "My first blog post",
 		"create_date": "20/09/2019",
 		"modified_date": "20/09/2019",
-    "user": "janel",
+    "username": "janel",
     "content": "This is my first blog post!",
     "category": ""
   }
@@ -341,7 +341,7 @@ describe("getAllPosts with one post", () => {
 		expect(Object.keys(utilities.getAllPosts({})).length).toBe(1)
 	})
 	it("user of first post should be tester", () => {
-		expect(utilities.getAllPosts({})["1"].user).toBe("tester")
+		expect(utilities.getAllPosts({})["1"].username).toBe("tester")
 	})
 })
 
@@ -353,7 +353,7 @@ describe("getPostById", () => {
 		}
 	}
 	it("user of post with id 1 should be tester", () => {
-		expect(utilities.getPostById(req).user).toBe("tester")
+		expect(utilities.getPostById(req).username).toBe("tester")
 	})
 })
 
@@ -363,7 +363,7 @@ function setupData() {
 	let testPost = {}
 	let date = Date.now()
 	testPost.title = "Test post 1"
-	testPost.user = "tester"
+	testPost.username = "tester"
 	testPost.create_date = date
 	testPost.modified_date = date
 	testPost.content = "This is the first test post"
@@ -465,7 +465,7 @@ const addPost = function(req) {
 		blogPosts[id].title = req.body.title
 		blogPosts[id].create_date = date
 		blogPosts[id].modified_date = date
-		blogPosts[id].user = req.body.user
+		blogPosts[id].username = req.body.username
 		blogPosts[id].content = req.body.content
 		blogPosts[id].category = req.body.category || ""
 		writePosts()
@@ -523,7 +523,7 @@ describe("addPost", () => {
 		const req = {
 			body: {
 				title: "Another post",
-				user: "tester",
+				username: "tester",
 				content: "This is another blog post!",
 				category: ""
 			}
@@ -676,7 +676,7 @@ describe("updatePost", () => {
 			},
 			body: {
 				title: "Updated post",
-				user: "tester",
+				username: "tester",
 				content: "This is an updated blog post!",
 				category: ""
 			}
@@ -732,7 +732,7 @@ http://localhost:3000/posts?category=coding
 Multiple query parameters are separated by `&` operators
 
 ```
-http://localhost:3000/posts?user=janel&category=coding
+http://localhost:3000/posts?username=janel&category=coding
 ```
 
 To access the query string, we can refer to `req.query`, which will be an object that stores the query parameter names as keys and their associated values. If there is no query string with the req object, `req.query` will be an empty object (rather than undefined or null).

@@ -3,17 +3,26 @@ const Schema = mongoose.Schema;
 
 // Define Post schema
 const Post = new Schema({
-    title: String,
+    title: {
+        type: String,
+        required: true
+    },
     create_date: {
         type: Date,
-        default: Date.now
+        required: true
     },
     modified_date: {
         type: Date,
-        default: Date.now
+        required: true
     },
-    user: String,
-    content: String,
+    username: {
+        type: String,
+        required: true
+    },
+    content: {
+        type: String,
+        required: true
+    },
     category: String
 });
 
