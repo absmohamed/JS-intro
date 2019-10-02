@@ -318,13 +318,13 @@ It is important to make sure our data is freshly set up for each test, so we don
 utilities.test.js
 
 ```javascript
-const express = require("express")
+const expect = require("expect")
 const fs = require("fs")
-const utilities = require("./utilities")
+const utilities = require("../utils/utilities")
 // Use test data file
 const testDataFile = "../data/blog_posts.test.json"
 // When we write to the file, the path is relative to app.js
-const testDataFileForWrite = utilities.getDataFileRelativeToApp()
+const testDataFileForWrite = utilities.getDataFileRelativeToApp(testDataFile)
 
 beforeEach(() => {
 	// Set and load data from test data file
@@ -492,7 +492,7 @@ function getNextId() {
 
 // Writes blogPosts to the data file (synchronously)
 function writePosts() {
-	fs.writeFileSync(getDataFileRelativeToApp(), JSON.stringify(blogPosts))
+	fs.writeFileSync(getDataFileRelativeToApp(dataFile), JSON.stringify(blogPosts))
 }
 
 module.exports = {
