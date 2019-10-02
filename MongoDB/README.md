@@ -54,10 +54,14 @@ Just like Postgres before we can start using MongoDB we need to install it on ou
 
 MAC OSX using Hombrew
 
+https://docs.mongodb.com/manual/tutorial/install-mongodb-on-os-x/
+
 ```
 brew update
 brew install mongodb
 ```
+
+If this command doesn't work take a look to the link and write its commands
 
 Ubuntu
 
