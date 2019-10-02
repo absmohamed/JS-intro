@@ -1,0 +1,19 @@
+{
+  "name": "code",
+  "version": "1.0.0",
+  "description": "Our first Express server",
+  "main": "app.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "node-server": "forever -c \"nodemon --exitcrash -L\" app.js",
+  },
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "nodemon": "^1.19.3",
+    "forever": "^1.0.0"
+  },
+  "dependencies": {
+    "express": "^4.17.1"
+  }
+}
