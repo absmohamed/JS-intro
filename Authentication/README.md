@@ -1,8 +1,8 @@
-# Authentication and Sessions
+# Authentication
 
 We learned about authentication with Rails, where we used a gem called Devise. In Rails, we could have implemented our own authentication framework, but it makes sense to use one that has been provided by someone else in most cases.
 
-- [Authentication and Sessions](#authentication-and-sessions)
+- [Authentication](#authentication)
   - [References](#references)
   - [Express-session](#express-session)
   - [Creating the User model](#creating-the-user-model)
@@ -25,7 +25,7 @@ We learned about authentication with Rails, where we used a gem called Devise. I
   - [Adding the username from req.user on CREATE](#adding-the-username-from-requser-on-create)
   - [Testing authentication](#testing-authentication)
   - [Only allow blog post owner to delete and update](#only-allow-blog-post-owner-to-delete-and-update)
-  - [Challenges](#challenges)
+  - [Challenges - Adding authorization](#challenges---adding-authorization)
 
 ## References
 
@@ -701,4 +701,11 @@ router.put("/:id", verifyOwner, changePost)
 
 That should do it. Test that if you create a post with a logged in user, you can update and delete that post. Also test that if you try to delete or update a post that was created by another user, you cannot update or delete it.
 
-## Challenges
+## Challenges - Adding authorization
+We can add anything to a session object and use it. One popular way to use this is for authorization. Remember that while authentication verifies that a user is who they say they are, authorization determines what resources a user can access.
+
+One common way to implement authorization is using roles.
+
+Our blog application would benefit from an admin user role. The admin user would have permissions to do things like delete offensive content, or to block users. 
+
+We can add a role attribute to our User schema, and set it to a default value, like 'basic', or just 'user'. An admin user could have the role 'admin'.

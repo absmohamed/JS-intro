@@ -3,6 +3,7 @@ const cors = require('cors');
 const bodyParser = require('body-parser');
 const mongoose = require('mongoose');
 const session = require('express-session');
+const MongoStore = require("connect-mongo")(session)
 const passport = require('passport');
 const passportLocalMongoose = require('passport-local-mongoose');
 const postRouter = require('./routes/posts_routes');
@@ -19,7 +20,10 @@ app.use(session({
     // resave and saveUninitialized set to false for deprecation warnings
     secret: "Express is awesome",
     resave: false,
-    saveUninitialized: false
+    saveUninitialized: false,
+    store: new MongoStore({
+        mongooseConnection: mongoose.connection
+    })
 }));
 
 require('./config/passport');

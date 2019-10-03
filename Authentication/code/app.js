@@ -2,6 +2,8 @@ const express = require('express');
 const cors = require('cors');
 const bodyParser = require('body-parser');
 const mongoose = require('mongoose');
+const session = require('express-session');
+const MongoStore = require("connect-mongo")(session)
 const postRouter = require('./routes/posts_routes');
 
 const port = 3000;
@@ -27,6 +29,16 @@ mongoose.connect(dbConn, {
             console.log('Connected to database!');
         }
     });
+
+app.use(session({
+    // resave and saveUninitialized set to false for deprecation warnings
+    secret: "Express is awesome",
+    resave: false,
+    saveUninitialized: false,
+    store: new MongoStore({
+        mongooseConnection: mongoose.connection
+    })
+}));
 
 app.get('/', (req, res) => {
     console.log("get on /");
