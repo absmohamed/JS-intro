@@ -12,7 +12,7 @@ We learned about authentication with Rails, where we used a gem called Devise. I
   - [passport-local-mongoose](#passport-local-mongoose)
   - [Adding authentication to our blog application](#adding-authentication-to-our-blog-application)
   - [Installing Passport](#installing-passport)
-  - [Adding authorization routes](#adding-authorization-routes)
+  - [Adding authentication routes](#adding-authentication-routes)
   - [The register route](#the-register-route)
     - [passport.authenticate](#passportauthenticate)
     - [Testing the register route](#testing-the-register-route)
@@ -34,6 +34,7 @@ We learned about authentication with Rails, where we used a gem called Devise. I
 - [Understanding sessions and local authentication](https://mianlabs.com/2018/05/09/understanding-sessions-and-local-authentication-in-express-with-passport-and-mongodb/)
 - [passport-local-mongoose](https://github.com/saintedlama/passport-local-mongoose)
 - [express session and passport session](https://www.airpair.com/express/posts/expressjs-and-passportjs-sessions-deep-dive)
+- [Passport authentication flow](http://toon.io/understanding-passportjs-authentication-flow/)
 
 ## Express-session
 
@@ -115,7 +116,7 @@ There are many different kinds of authentication methods being used today:
 
 - Local or Basic Authentication - username & password
 - Tokens like JSON Web Tokens (JWT) - unique token string sent in the header
-- OAuth (Open Authorization) - Think login via Facebook or Google
+- OAuth (Open authentication) - Think login via Facebook or Google
 
 For our blog app, we'll use basic authentication for now.
 
@@ -139,6 +140,8 @@ Additionally, this middleware adds some static methods to our user schema that m
 ## Adding authentication to our blog application
 
 In this lesson, we'll add authentication to our blog application using Passport. The code from previous lessons is in the **code** directory and we'll start there.
+
+![blog app with authentication](img/auth-crud-blog-app.png)
 
 ## Installing Passport
 
@@ -217,9 +220,9 @@ Ok so in this file we are requiring our passport setup from the `config/passport
 
 So we have passport configured and bound to our application.
 
-## Adding authorization routes
+## Adding authentication routes
 
-Now we can add some authorization routes to our application. We will need three routes:
+Now we can add some authentication routes to our application. We will need three routes:
 
 - register (POST because we need to send user data)
 - login (POST because we need to send user data)
@@ -234,7 +237,7 @@ To prepare, we'll create 2 new files:
     └── auth_routes.js
 ```
 
-We will put the logic directly in our `auth_controller.js` for the authorization routes.
+We will put the logic directly in our `auth_controller.js` for the authentication routes.
 
 ## The register route
 
@@ -289,11 +292,13 @@ In the callback function, if we receive an error, we send it back in the respons
 
 ### passport.authenticate
 
-In the call to `passport.authenticate`, we pass the strategy, 'local', and it **returns a function**. We call that authenticate function that is returned with three parameters: req, res, and a callback function. When the callback function is executed, the user has been authenticated by passport and added to the request as `req.user`. If authentication fails, passport sends back a `401` status (Unauthorized) and does not execute the callback function.
+In the call to `passport.authenticate`, we pass the strategy, 'local', and it **returns a function**. We call that authenticate function that is returned with three parameters: req, res, and a callback function. If the user is successfully authenticated, the user object is serialized (with `passport.serializeUser`) and attached to the session as `req.session.passport.user`. It is then read from the session and attached to `req.user`, deserialized. When the callback function is executed, this has all been done, and any remaining middleware has access to the user object in `req.session` and `req.user`. If authentication fails, passport sends back a `401` status (Unauthorized) and does not execute the callback function.
 
-In the callback function, we set status to 200, and send back the user object from `req.user`. At this point, we'll be able to see that passport is storing the username in the express-session.
+In the callback function, we set status to 200, and send back the deserialized user object from `req.user` as json.
 
-Now to add the route in auth_routes.js. We will have to require express, express.Router, and auth_controller:
+The serialized user information in the session will be available until we call `req.logout`, which will remove the user information from the session, or until the session between the client and server ends. Each time a request comes to our server, passport checks the session object for a serialized user. If it finds one, it deserializes it (using `passport.deserializeUser`), and adds it to `req.user`.
+
+Now to add the route in auth_routes.js. We will have to require `express`, `express.Router`, and the `register` function in `auth_controller`:
 
 auth_routes.js
 
@@ -318,7 +323,7 @@ app.use("/auth", authRouter)
 
 Now we can test it! We will test manually with Postman, because testing with passport is tricky and is a lesson for another time.
 
-First test - does the server run? Try it with `npm start`. If there are any problems, try to figure it out and get help if you need it. The completed code is available in code-complete if you get really stuck.
+First test - does the server run? Try it with `npm start`. If there are any problems, try to figure it out and get help if you need it. The completed code is available in `code-complete` if you get really stuck.
 
 ### Testing the register route
 
@@ -349,7 +354,7 @@ users
 
 ## The login route
 
-We've already written code to implement the logic for the login route - it's in register already (passport.authenticate). We'll pull it out into a helper function to keep our code dry, and add a log of the session object so we can see what is added by passport when a user is authenticated:
+We've already written code to implement the logic for the login route - it's in `register` already (`passport.authenticate`). We'll pull it out into a helper function to keep our code DRY, and add a log of the session and req.user object so we can see what is added by passport when a user is authenticated:
 
 auth_controller.js
 
@@ -360,6 +365,7 @@ function loginUser(req, res) {
 	authenticate(req, res, function() {
 		console.log("authenticated", req.user.username)
 		console.log("session object:", req.session)
+		console.log("req.user:", req.user)
 		res.status(200)
 		res.json(req.user)
 	})
@@ -392,24 +398,16 @@ const register = function(req, res) {
 }
 ```
 
-And we can use the same helper function to define our login route logic:
-
-auth_controller.js
-
-```javascript
-const login = function(req, res) {
-	loginUser(req, res)
-}
-```
-
-Add the login function to the exports:
+And we can use the same helper function to define our login route logic. We can even just do this in the `exports` statement like this:
 
 auth_controller.js
 
 ```javascript
 module.exports = {
-	register,
-	login
+    register,
+    login: loginUser,
+    logout
+};
 }
 ```
 
@@ -446,6 +444,8 @@ This item was added by passport to the session:
 passport: {user: 'tester_bob'}
 ```
 
+And the deserialized user object has been added to `req.user`.
+
 ## The logout route
 
 The last route to implement is the simplest. Passport provides a helper function on the request object that can be used to remove the user information from the session, which essentially logs out the user: `req.logout()`.
@@ -455,7 +455,9 @@ Add this to auth_controller.js:
 ```javascript
 const logout = function(req, res) {
 	req.logout()
+	console.log("logged out user")
 	console.log("session object:", req.session)
+	console.log("req.user:", req.user)
 	res.sendStatus(200)
 }
 ```
@@ -505,6 +507,8 @@ We should get a 200 status back, and the passport attribute is removed from the 
 ## Using our shiny, new authentication
 
 Now we can authenticate users! Let's put that feature to work. In our blog app, we should only allow a user to make, change, or delete a post if they are authenticated.
+
+![blog app with authentication](img/auth-crud-blog-app.png)
 
 We will add a piece of middleware to our posts_controller.js that will determine if we have an authenticated user in the session. We can use a helper method called `isAuthenticated()`, provided by passport on the request object. If it returns true, we'll call next(), and if not, we'll send a 403 (Forbidden) status:
 
@@ -610,7 +614,7 @@ posts_controller.js
 
 ```javascript
 const makePost = function(req, res) {
-	// add the username from the session
+	// add the username from req.user
 	req.body.username = req.user.username
 	// addPost returns a promise
 	addPost(req)
@@ -629,7 +633,7 @@ const makePost = function(req, res) {
 
 ## Testing authentication
 
-To test this, first verify that our GET routes for `/post` work even if a user is not authenticated. You can logout first, but if you made code changes, the server would have restarted and no user is authenticated anyway.
+To test this, first verify that our GET routes for `/post` work even if a user is not authenticated. You can logout first, but if you made code changes, the server would have restarted, destroying the session with the logged in user anyway.
 
 After you prove to yourself that the GET routes for `/post` work, try to create a post without logging in first. This should fail in Postman:
 
@@ -643,11 +647,11 @@ Now login, and try again. This should succeed. Remember to leave the username ou
 
 Awesome!
 
-We're nearly done, but there is one more thing to handle. We want any authenticated user to be able to create a blog post, but only the owner of a post should be able to update or delete it, so we need to add some handling for this.
+We're nearly done, but there is one more thing to handle. We want any authenticated user to be able to create a blog post, but only the owner of a post should be able to update or delete it, so we need to add some middleware for this.
 
 ## Only allow blog post owner to delete and update
 
-We can accomplish this using another piece of middleware in posts_routes.js that we will define in posts_controller.js. The middleware will get the post from the id passed to DELETE, and make sure the post.username matches the req.user.username (or we could check it against req.session.user - these should be the same).
+We can accomplish this using another piece of middleware in posts_routes.js that we will define in posts_controller.js. The middleware will get the post from the id passed to DELETE, and make sure the `post.username` matches the `req.user.username`.
 
 posts_controller.js
 
@@ -679,7 +683,7 @@ module.exports = {
 }
 ```
 
-Now use the middleware in posts_routes.js. We will have to use the middleware directly in the route implementations or params.id won't be set on the request object (make sure you remember to add it to the require statement for posts_controller):
+Now use the middleware in posts_routes.js. We will have to use the middleware directly in the route implementations or `params.id` won't be set on the request object (make sure you remember to add this new middleware function to the `require` statement for posts_controller):
 
 posts_routes.js
 

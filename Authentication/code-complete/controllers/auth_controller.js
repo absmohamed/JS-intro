@@ -18,13 +18,11 @@ const register = function (req, res) {
     });
 };
 
-const login = function (req, res) {
-    loginUser(req, res);
-}
-
 const logout = function (req, res) {
     req.logout();
+    console.log('logged out user');
     console.log('session object:', req.session);
+    console.log('req.user:', req.user);
     res.sendStatus(200);
 }
 
@@ -36,6 +34,7 @@ function loginUser(req, res) {
     authenticate(req, res, function () {
         console.log('authenticated', req.user.username);
         console.log('session object:', req.session);
+        console.log('req.user:', req.user);
         res.status(200);
         res.json(req.user);
     });
@@ -43,6 +42,6 @@ function loginUser(req, res) {
 
 module.exports = {
     register,
-    login,
+    login: loginUser,
     logout
 };

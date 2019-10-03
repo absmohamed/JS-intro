@@ -31,6 +31,7 @@ const getPost = function (req, res) {
 };
 
 const makePost = function (req, res) {
+    // add the username from req.user
     req.body.username = req.user.username;
     // addPost returns a promise
     addPost(req).then((post) => {
