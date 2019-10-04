@@ -2,6 +2,12 @@
 
 We learned about authentication with Rails, where we used a gem called Devise. In Rails, we could have implemented our own authentication framework, but it makes sense to use one that has been provided by someone else in most cases.
 
+In this lesson, you will learn about how to implement authentication in Nodejs using Passport.js. You will learn about authentication methods or strategies available with passport, and how to use the basic or local strategy. You will learn about how passport integrates with express-session to store the authenticated user information in the session object, and how to use passport-local-mongoose to make things easier.
+
+Using what you learn, you will add a user model to the blog app and implement basic authentication. This includes implmenting authentication routes and the logic required for them, and putting the authentication to use in the app.
+
+Two challenges are provided to extend your learning to implement authorization and user management features.
+
 - [Authentication](#authentication)
   - [References](#references)
   - [Express-session](#express-session)
