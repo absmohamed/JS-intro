@@ -135,6 +135,12 @@ Now to get all of our documents from the students collection we can use the find
 db.students.find()
 ```
 
+There is a pretty print option in mongo shell, just like we saw in rails db console:
+
+```javascript
+db.student.find().pretty()
+```
+
 Find if called with no arguments will bring back every document in the collection. We can also give find an object with properties and it will bring back records that have those properties that match the given value.
 
 ```javascript
