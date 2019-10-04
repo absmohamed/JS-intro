@@ -8,6 +8,7 @@ const passport = require('passport');
 const passportLocalMongoose = require('passport-local-mongoose');
 const postRouter = require('./routes/posts_routes');
 const authRouter = require('./routes/auth_routes');
+const userRouter = require('./routes/users_routes');
 
 const port = 3000;
 
@@ -62,6 +63,7 @@ app.get('/', (req, res) => {
 
 app.use('/posts', postRouter);
 app.use('/auth', authRouter);
+app.use('/users', userRouter);
 
 app.listen(port, () => {
     console.log(`Blog express app listening on port ${port}`);

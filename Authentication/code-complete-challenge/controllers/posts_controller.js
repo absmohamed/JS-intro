@@ -4,7 +4,10 @@ const {
     addPost,
     deletePost,
     updatePost
-} = require('../utils/utilties');
+} = require('../utils/post_utilities');
+const {
+    userAuthenticated
+} = require('../utils/common_utilities');
 
 
 const getPosts = function (req, res) {
@@ -31,18 +34,24 @@ const getPost = function (req, res) {
 };
 
 const makePost = function (req, res) {
-    // add the username from req.user
-    req.body.username = req.user.username;
-    // addPost returns a promise
-    addPost(req).then((post) => {
-        res.status(201);
-        res.send(post);
-    }).catch((err) => {
-        res.status(500);
-        res.json({
-            error: err.message
+    // Check for error from middleware
+    if (req.error) {
+        res.status(req.error.status);
+        res.send(req.error.message);
+    } else {
+        // add the username from req.user
+        req.body.username = req.user.username;
+        // addPost returns a promise
+        addPost(req).then((post) => {
+            res.status(201);
+            res.send(post);
+        }).catch((err) => {
+            res.status(500);
+            res.json({
+                error: err.message
+            });
         });
-    });
+    }
 };
 
 const removePost = function (req, res) {
@@ -81,19 +90,12 @@ const changePost = function (req, res) {
     }
 };
 
-// middleware functions
-const userAuthenticated = function (req, res, next) {
-    if (req.isAuthenticated()) {
-        next();
-    } else {
-        res.sendStatus(403);
-    }
-}
+
 
 const verifyOwner = function (req, res, next) {
     // If post owner isn't currently logged in user, send forbidden
-
     if (req.user.role === 'admin') {
+        console.log('have admin user in middleware')
         next();
     } else {
         getPostById(req).then((post) => {
@@ -115,12 +117,23 @@ const verifyOwner = function (req, res, next) {
     }
 }
 
+const validUser = function (req, res, next) {
+    // If user is blocked, send back an error
+    if (req.user.blocked) {
+        req.error = {
+            message: 'User is blocked',
+            status: 403
+        };
+    }
+    next();
+}
+
 module.exports = {
     getPosts,
     getPost,
     makePost,
     removePost,
     changePost,
-    userAuthenticated,
-    verifyOwner
+    verifyOwner,
+    validUser
 };

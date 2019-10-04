@@ -25,7 +25,8 @@ We learned about authentication with Rails, where we used a gem called Devise. I
   - [Adding the username from req.user on CREATE](#adding-the-username-from-requser-on-create)
   - [Testing authentication](#testing-authentication)
   - [Only allow blog post owner to delete and update](#only-allow-blog-post-owner-to-delete-and-update)
-  - [Challenges - Adding authorization](#challenges---adding-authorization)
+  - [Challenge - Adding authorization](#challenge---adding-authorization)
+  - [Bonus challenge - user management](#bonus-challenge---user-management)
 
 ## References
 
@@ -651,25 +652,70 @@ We're nearly done, but there is one more thing to handle. We want any authentica
 
 ## Only allow blog post owner to delete and update
 
-We can accomplish this using another piece of middleware in posts_routes.js that we will define in posts_controller.js. The middleware will get the post from the id passed to DELETE, and make sure the `post.username` matches the `req.user.username`.
+We can accomplish this using another piece of middleware in posts_routes.js that we will define in posts_controller.js. The middleware will get the post from the id passed to DELETE, and make sure the `post.username` matches the `req.user.username`. If it doesn't, it will set an error on req, that we will check for in `makePost` and `changePost`:
 
 posts_controller.js
 
 ```javascript
-const verifyOwner = async function(req, res, next) {
-	// If post owner isn't currently logged in user, send forbidden
-	// Use our existing utilties function to get the post
-	getPostById(req)
-		.then(post => {
-			if (req.user.username !== post.username) {
-				res.sendStatus(403)
-			}
-			next()
-		})
-		.catch(err => {
-			res.status(404)
-			res.send("Post not found")
-		})
+const removePost = function (req, res) {
+    // Check for error from middleware
+    if (req.error) {
+        res.status(req.error.status);
+        res.send(req.error.message);
+    } else {
+        // deletePost returns a promise
+        deletePost(req.params.id).then(() => res.sendStatus(204))
+            .catch((err) => {
+                res.status(500);
+                res.json({
+                    error: err.message
+                })
+            });
+    }
+};
+
+const changePost = function (req, res) {
+    // Check for error from middleware
+    if (req.error) {
+        res.status(req.error.status);
+        res.send(req.error.message);
+    } else {
+        // updatePost returns a promise
+        updatePost(req).then((post) => {
+            res.status(200);
+            res.send(post);
+        }).catch((err) => {
+            res.status(500);
+            res.json({
+                error: err.message
+            })
+        });
+    }
+};
+
+const verifyOwner = function (req, res, next) {
+    // If post owner isn't currently logged in user, send forbidden
+
+    if (req.user.role === 'admin') {
+        next();
+    } else {
+        getPostById(req).then((post) => {
+                if (req.user.username !== post.username) {
+                    req.error = {
+                        message: 'You do not have permission to modify this post',
+                        status: 403
+                    };
+                }
+                next();
+            })
+            .catch((err) => {
+                req.error = {
+                    message: 'Post not found',
+                    status: 404
+                }
+                next();
+            });
+    }
 }
 
 module.exports = {
@@ -701,11 +747,31 @@ router.put("/:id", verifyOwner, changePost)
 
 That should do it. Test that if you create a post with a logged in user, you can update and delete that post. Also test that if you try to delete or update a post that was created by another user, you cannot update or delete it.
 
-## Challenges - Adding authorization
-We can add anything to a session object and use it. One popular way to use this is for authorization. Remember that while authentication verifies that a user is who they say they are, authorization determines what resources a user can access.
+## Challenge - Adding authorization
+
+**Add an admin role - allow admin to delete and update any post**
 
 One common way to implement authorization is using roles.
 
-Our blog application would benefit from an admin user role. The admin user would have permissions to do things like delete offensive content, or to block users. 
+Our blog application would benefit from an admin user role. The admin user would have permissions to do things like delete offensive content, or to block users.
 
-We can add a role attribute to our User schema, and set it to a default value, like 'basic', or just 'user'. An admin user could have the role 'admin'.
+We can add a role attribute to our User schema, and set it to a default value, like 'basic', or just 'user'. An admin user could have the role 'admin'. As a start, we could add an additional check for the delete and update routes - right now we only allow those actions if the post owner is the currently logged in user. We could change that check to allow the action if the logged in user is either the post owner, or has the admin role. This is your challenge!
+
+1. Add a `role` field to the User schema. Make the default value 'user'. (_Hint: You will have to make a change to the register function in the auth_controller_).
+2. Change the `verifyOwner` middleware to allow the next action if the logged in user has the `admin` role (or is the owner of the post).
+3. Test your changes! Can an admin user delete or update someone else's post? If the user is not admin, can they delete or update someone else's post?
+
+## Bonus challenge - user management
+
+**Part 1:**
+Add another field to the user schema called 'blocked' that is 'false' by default.
+
+If a user is blocked, do not allow them to create, update, or delete any posts.
+
+**Part 2:**
+Implement a way for an admin user to delete or block/unblock another user.
+
+There are a number of ways to do this, but if we want to consider further enhancements to the app, it would be best to add a users router and controller (and user_utilities). This is where we would put code to manage users, including deleting, updating, and blocking or unblocking users (which we could do with an update). We already have a way to add users with register.
+
+Try using what you've learned in these past lessons to add this functionality. Make sure that only an authenticated user with an admin role is allowed to delete another user, or to change the blocked property of a user. 
+
