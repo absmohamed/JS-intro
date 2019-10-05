@@ -91,7 +91,8 @@ Each day there will be a new directory added with the code snippets used for the
 ## Day 20
 
 - [Cookies](https://github.com/CoderAcademy-BRI/js-intro-lessons/tree/master/Cookies)
+- [Express session](https://github.com/CoderAcademy-BRI/js-intro-lessons/tree/master/Express-session)
 
 ## Day 21
 
-- [Authorization]To be completed
+- [Authorization](https://github.com/CoderAcademy-BRI/js-intro-lessons/tree/master/Authentication)
