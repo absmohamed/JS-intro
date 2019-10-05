@@ -95,4 +95,4 @@ Each day there will be a new directory added with the code snippets used for the
 
 ## Day 21
 
-- [Authorization](https://github.com/CoderAcademy-BRI/js-intro-lessons/tree/master/Authentication)
+- [Authentication](https://github.com/CoderAcademy-BRI/js-intro-lessons/tree/master/Authentication)
