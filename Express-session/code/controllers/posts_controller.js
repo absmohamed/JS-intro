@@ -7,62 +7,72 @@ const {
 } = require('../utils/utilities');
 
 const getPosts = function (req, res) {
-    // getAllPosts returns a promise
-    getAllPosts(req).then((posts) => {
+    // execute the query from getAllPosts
+    getAllPosts(req).
+    sort({
+        modified_date: -1
+    }).
+    exec((err, posts) => {
+        if (err) {
+            res.status(500);
+            res.json({
+                error: err.message
+            });
+        }
         res.send(posts);
-    }).catch((err) => {
-        // Errors are passed back from mongodb
-        res.status(500);
-        res.json({
-            error: err.message
-        });
     });
 };
 
 const getPost = function (req, res) {
-    // getPostById returns a promise
-    getPostById(req).then((post) => {
+    // execute the query from getPostById
+    getPostById(req).exec((err, post) => {
+        if (err) {
+            res.status(404);
+            res.send("Post not found");
+        }
         res.send(post);
-    }).catch((err) => {
-        res.status(404);
-        res.send("Post not found");
     });
 };
 
 const makePost = function (req, res) {
-    // addPost returns a promise
-    addPost(req).then((post) => {
+    // save the Post instance from addPost
+    addPost(req).save((err, post) => {
+        if (err) {
+            res.status(500);
+            res.json({
+                error: err.message
+            });
+        }
         res.status(201);
         res.send(post);
-    }).catch((err) => {
-        res.status(500);
-        res.json({
-            error: err.message
-        });
     });
 };
 
 const removePost = function (req, res) {
-    // deletePost returns a promise
-    deletePost(req.params.id).then(() => res.sendStatus(204))
-        .catch((err) => {
+    // execute the query from deletePost
+    deletePost(req.params.id).exec((err) => {
+        if (err) {
             res.status(500);
             res.json({
                 error: err.message
-            })
-        });
+            });
+        }
+        res.sendStatus(204);
+
+    });
 };
 
 const changePost = function (req, res) {
-    // updatePost returns a promise
-    updatePost(req).then((post) => {
+    // execute the query from updatePost
+    updatePost(req).exec((err, post) => {
+        if (err) {
+            res.status(500);
+            res.json({
+                error: err.message
+            });
+        }
         res.status(200);
         res.send(post);
-    }).catch((err) => {
-        res.status(500);
-        res.json({
-            error: err.message
-        })
     });
 };
 
