@@ -547,6 +547,10 @@ describe.only('addPost', () => {
 });
 ```
 
+Notice that we used `save` instead of `exec`. This is because `addPost` returns a new Post object that was instantiated with `new Post`. To persist the associated document to the database, we use `save`.
+
+Contrast this with [what we are doing in our test setup function](#setup-and-tear-down-for-each-test), where we call `Post.create`. If we call `Post.create`, it executes the `save` and returns a promise.
+
 **What about data validation?**
 
 ## Data validation for create
@@ -589,10 +593,9 @@ Undo the change to make the `addPost` test pass again.
 
 **Updating the posts_controller.js for CREATE**
 
-Similar to what we had to do for the READ routes, we need to execute the save on the Post object returned by `addPost` in utilities, and handle the response in the callback function we pass to it:
+Similar to what we had to do in the test, we need to execute the `save` on the Post object returned by `addPost` in utilities, and handle the response in the callback function we pass to it:
 
 posts_controller.js
-
 ```javascript
 const makePost = function (req, res) {
     // save the Post instance from addPost
