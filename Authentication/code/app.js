@@ -3,7 +3,7 @@ const cors = require('cors');
 const bodyParser = require('body-parser');
 const mongoose = require('mongoose');
 const session = require('express-session');
-const MongoStore = require("connect-mongo")(session)
+const MongoStore = require('connect-mongo')(session);
 const postRouter = require('./routes/posts_routes');
 
 const port = 3000;
@@ -35,6 +35,9 @@ app.use(session({
     secret: "Express is awesome",
     resave: false,
     saveUninitialized: false,
+    cookie: {
+        maxAge: 60000
+    },
     store: new MongoStore({
         mongooseConnection: mongoose.connection
     })
@@ -42,7 +45,9 @@ app.use(session({
 
 app.get('/', (req, res) => {
     console.log("get on /");
-    res.send("got your request");
+    req.session.timesVisited ?
+        req.session.timesVisited++ : req.session.timesVisited = 1;
+    res.send(`You have visited ${req.session.timesVisited} times!`);
 })
 
 app.use('/posts', postRouter);

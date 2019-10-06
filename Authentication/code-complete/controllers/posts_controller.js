@@ -4,44 +4,50 @@ const {
     addPost,
     deletePost,
     updatePost
-} = require('../utils/utilties');
+} = require('../utils/utilities');
 
 
 const getPosts = function (req, res) {
-    // getAllPosts returns a promise
-    getAllPosts(req).then((posts) => {
+    // execute the query from getAllPosts
+    getAllPosts(req).
+    sort({
+        modified_date: -1
+    }).
+    exec((err, posts) => {
+        if (err) {
+            res.status(500);
+            res.json({
+                error: err.message
+            });
+        }
         res.send(posts);
-    }).catch((err) => {
-        // Errors are passed back from mongodb
-        res.status(500);
-        res.json({
-            error: err.message
-        });
     });
 };
 
 const getPost = function (req, res) {
-    // getPostById returns a promise
-    getPostById(req).then((post) => {
+    // execute the query from getPostById
+    getPostById(req).exec((err, post) => {
+        if (err) {
+            res.status(404);
+            res.send("Post not found");
+        }
         res.send(post);
-    }).catch((err) => {
-        res.status(404);
-        res.send("Post not found");
     });
 };
 
 const makePost = function (req, res) {
     // add the username from req.user
     req.body.username = req.user.username;
-    // addPost returns a promise
-    addPost(req).then((post) => {
+    // save the Post instance from addPost
+    addPost(req).save((err, post) => {
+        if (err) {
+            res.status(500);
+            res.json({
+                error: err.message
+            });
+        }
         res.status(201);
         res.send(post);
-    }).catch((err) => {
-        res.status(500);
-        res.json({
-            error: err.message
-        });
     });
 };
 
@@ -51,14 +57,16 @@ const removePost = function (req, res) {
         res.status(req.error.status);
         res.send(req.error.message);
     } else {
-        // deletePost returns a promise
-        deletePost(req.params.id).then(() => res.sendStatus(204))
-            .catch((err) => {
+        // execute the query from deletePost
+        deletePost(req.params.id).exec((err) => {
+            if (err) {
                 res.status(500);
                 res.json({
                     error: err.message
-                })
-            });
+                });
+            }
+            res.sendStatus(204);
+        });
     }
 };
 
@@ -68,15 +76,16 @@ const changePost = function (req, res) {
         res.status(req.error.status);
         res.send(req.error.message);
     } else {
-        // updatePost returns a promise
-        updatePost(req).then((post) => {
+        // execute the query from updatePost
+        updatePost(req).exec((err, post) => {
+            if (err) {
+                res.status(500);
+                res.json({
+                    error: err.message
+                });
+            }
             res.status(200);
             res.send(post);
-        }).catch((err) => {
-            res.status(500);
-            res.json({
-                error: err.message
-            })
         });
     }
 };
@@ -96,22 +105,22 @@ const verifyOwner = function (req, res, next) {
     if (req.user.role === 'admin') {
         next();
     } else {
-        getPostById(req).then((post) => {
-                if (req.user.username !== post.username) {
-                    req.error = {
-                        message: 'You do not have permission to modify this post',
-                        status: 403
-                    };
-                }
-                next();
-            })
-            .catch((err) => {
+        getPostById(req).exec((err, post) => {
+            if (err) {
                 req.error = {
                     message: 'Post not found',
                     status: 404
                 }
                 next();
-            });
+            }
+            if (req.user.username !== post.username) {
+                req.error = {
+                    message: 'You do not have permission to modify this post',
+                    status: 403
+                };
+            }
+            next();
+        })
     }
 }
 
