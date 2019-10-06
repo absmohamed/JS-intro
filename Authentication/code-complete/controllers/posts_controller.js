@@ -120,7 +120,7 @@ const verifyOwner = function (req, res, next) {
                 };
             }
             next();
-        })
+        });
     }
 }
 

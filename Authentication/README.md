@@ -10,7 +10,6 @@ Two challenges are provided to extend your learning to implement authorization a
 
 - [Authentication](#authentication)
   - [References](#references)
-  - [Express-session](#express-session)
   - [Creating the User model](#creating-the-user-model)
   - [Passport](#passport)
   - [Authentication Methods](#authentication-methods)
@@ -36,58 +35,12 @@ Two challenges are provided to extend your learning to implement authorization a
 
 ## References
 
-- [express-session](https://github.com/expressjs/session)
 - [Passport](http://www.passportjs.org/)
 - [Understanding sessions and local authentication](https://mianlabs.com/2018/05/09/understanding-sessions-and-local-authentication-in-express-with-passport-and-mongodb/)
 - [passport-local-mongoose](https://github.com/saintedlama/passport-local-mongoose)
 - [express session and passport session](https://www.airpair.com/express/posts/expressjs-and-passportjs-sessions-deep-dive)
 - [Passport authentication flow](http://toon.io/understanding-passportjs-authentication-flow/)
 
-## Express-session
-
-Before we get into authentication with Passport, we'll introduce another module we will need: `express-session`. This is used to help manage our server-client sessions and store session data on the server, and handles some of the work for us, such as:
-
-- sending server session cookies as httpOnly and signed by default
-- generating unique session ids for each client user session
-
-We can choose to set a `maxAge` for our session cookies, if for example we want to force a user to re-authenticate after some period of time.
-
-Install `express-session`:
-
-```
-npm i express-session
-```
-
-We can use the session property on any client request to store data that is particular to that client session. For example, we could use it to store how many times they have visited a particular url on our server, or whether or not the user associated with the session is authenticated.
-
-By default, this information is stored in memory on the server. This is typical for development, but not a good practice for production. In production, session data is either stored in one of these ways:
-
-- in a database (i.e., [Mongo](https://www.npmjs.com/package/connect-mongo)),
-- in the server file system (i.e., using [filestore](https://www.npmjs.com/package/session-file-store)),
-- using a memory-cache system (i.e., [Redis](https://www.npmjs.com/package/connect-redis) or [Memcached](https://www.npmjs.com/package/connect-memcached))
-
-The express-session github has a [list of many compatible store options](https://github.com/expressjs/session#compatible-session-stores)
-
-For now, we'll set up our app to use express-session with in memory storage. Add this to our app.js:
-
-app.js
-
-```javascript
-const session = require("express-session")
-
-app.use(
-	session({
-		// resave and saveUninitialized set to false for deprecation warnings
-		secret: "Express is awesome",
-		resave: false,
-		saveUninitialized: false
-	})
-)
-```
-
-Note that `secret` is the only required option for initialisation of the express-session. As mentioned, it's used to sign our cookies. The other two options shown are required to resolve some deprecation warnings.
-
-We'll get back to using this session after we learn some more about authentication with Passport.
 
 ## Creating the User model
 
@@ -187,15 +140,14 @@ app.js
 Ok lets setup passport.
 
 passport.js
-
 ```javascript
-const passport = require("passport")
-const User = require("../models/user")
+const passport = require("passport");
+const User = require("../models/user");
 
-passport.use(User.createStrategy())
+passport.use(User.createStrategy());
 
-passport.serializeUser(User.serializeUser())
-passport.deserializeUser(User.deserializeUser())
+passport.serializeUser(User.serializeUser());
+passport.deserializeUser(User.deserializeUser());
 ```
 
 Here we are using `passport-local-mongoose` to set up the local strategy and tell `passport` to use it.
@@ -205,20 +157,18 @@ We are also taking advantage of the `serializeUser` and `deserializeUser` functi
 In order for all of this `passport-local-mongoose` goodness to work, we have to add one more thing to our `model/user.js` file - we have to _plugin_ our `passport-local-mongoose` middleware with our User schema:
 
 user.js
-
 ```javascript
 // plugin the passport-local-mongoose middleware with our User schema
-User.plugin(passportLocalMongoose)
+User.plugin(passportLocalMongoose);
 ```
 
 Next we need to actually connect passport to our application. To do this, we need to initialize passport, and make it use the express-session. Before we initialize passport, we need to execute the passport configuration we put in `config/passport.js`. This is what we add to app.js to do all of these things:
 
 app.js
-
 ```javascript
-require("./config/passport")
-app.use(passport.initialize())
-app.use(passport.session())
+require("./config/passport");
+app.use(passport.initialize());
+app.use(passport.session());
 ```
 
 It's important that these three lines go AFTER we tell our app to use the express-session. You can look at the `app.js` in the code-complete directory if you are unsure of where to put this code.
@@ -251,38 +201,34 @@ We will put the logic directly in our `auth_controller.js` for the authenticatio
 To implement the register route logic in the auth_controller.js, we will use some of the passport-local-mongoose helper functions. We will need to require both passport and our User model:
 
 auth_controller.js
-
 ```javascript
-const passport = require("passport")
-const User = require("../models/user")
+const passport = require("passport");
+const User = require("../models/user");
 
-const register = function(req, res) {
-	User.register(
-		new User({
-			username: req.body.username,
-			email: req.body.email
-		}),
-		req.body.password,
-		function(err) {
-			if (err) {
-				res.status(500)
-				res.json({
-					error: err
-				})
-			} else {
-				// Log in the newly registered user
-				// passport.authenticate returns a function that we will call with req, res, and a callback function to execute on success
-				passport.authenticate("local")(req, res, function() {
-					console.log(`authenticated ${req.user.username}`)
-					res.status(200)
-					res.json(req.user)
-				})
-			}
-		}
-	)
-}
+const register = function (req, res) {
+    User.register(new User({
+        username: req.body.username,
+        email: req.body.email
+    }), req.body.password, function (err) {
+        if (err) {
+            res.status(500);
+            res.json({
+                error: err
+            });
+        } else {
+            // Log in the newly registered user
+            passport.authenticate('local')(req, res, function () {
+                console.log('authenticated', req.user.username);
+                console.log('session object:', req.session);
+                console.log('req.user:', req.user);
+                res.status(200);
+                res.json(req.user);
+            });
+        }
+    });
+};
 
-module.exports = { register }
+module.exports = { register };
 ```
 
 There's a lot going on here, so let's break it down.
@@ -308,24 +254,22 @@ The serialized user information in the session will be available until we call `
 Now to add the route in auth_routes.js. We will have to require `express`, `express.Router`, and the `register` function in `auth_controller`:
 
 auth_routes.js
-
 ```javascript
-const express = require("express")
-const router = express.Router()
-const { register } = require("../controllers/auth_controller")
+const express = require("express");
+const router = express.Router();
+const { register } = require("../controllers/auth_controller");
 
-router.post("/register", register)
+router.post("/register", register);
 
-module.exports = router
+module.exports = router;
 ```
 
 To complete this, we'll tell our app to use this router for '/auth' routes (and we'll have to add a require statement to app.js to bring in that router):
 
 app.js
-
 ```javascript
-const authRouter = require("./routes/auth_routes")
-app.use("/auth", authRouter)
+const authRouter = require("./routes/auth_routes");
+app.use("/auth", authRouter);
 ```
 
 Now we can test it! We will test manually with Postman, because testing with passport is tricky and is a lesson for another time.
@@ -364,69 +308,64 @@ users
 We've already written code to implement the logic for the login route - it's in `register` already (`passport.authenticate`). We'll pull it out into a helper function to keep our code DRY, and add a log of the session and req.user object so we can see what is added by passport when a user is authenticated:
 
 auth_controller.js
-
 ```javascript
-const authenticate = passport.authenticate("local")
+const authenticate = passport.authenticate("local");
 // helper function
+
 function loginUser(req, res) {
-	authenticate(req, res, function() {
-		console.log("authenticated", req.user.username)
-		console.log("session object:", req.session)
-		console.log("req.user:", req.user)
-		res.status(200)
-		res.json(req.user)
-	})
+    // passport.authenticate returns a function that we will call with req, res, and a callback function to execute on success    
+
+    authenticate(req, res, function () {
+        console.log('authenticated', req.user.username);
+        console.log('session object:', req.session);
+        console.log('req.user:', req.user);
+        res.status(200);
+        res.json(req.user);
+    });
 }
 ```
 
 Now replace the code in the register function with a call to this helper function:
 
 auth_controller.js
-
 ```javascript
-const register = function(req, res) {
-	User.register(
-		new User({
-			username: req.body.username,
-			email: req.body.email
-		}),
-		req.body.password,
-		function(err) {
-			if (err) {
-				res.status(500)
-				res.json({
-					error: err
-				})
-			} else {
-				loginUser(req, res)
-			}
-		}
-	)
-}
+const register = function (req, res) {
+    User.register(new User({
+        username: req.body.username,
+        email: req.body.email
+    }), req.body.password, function (err) {
+        if (err) {
+            res.status(500);
+            res.json({
+                error: err
+            });
+        } else {
+            // Log in the newly registered user
+            loginUser(req, res);
+        }
+    });
+};
 ```
 
 And we can use the same helper function to define our login route logic. We can even just do this in the `exports` statement like this:
 
 auth_controller.js
-
 ```javascript
 module.exports = {
     register,
     login: loginUser,
     logout
 };
-}
 ```
 
 Add the POST login route to auth_routes.js:
 
 auth_routes.js
-
 ```javascript
-const { register, login } = require("../controllers/auth_controller")
+const { register, login } = require("../controllers/auth_controller");
 
-router.post("/register", register)
-router.post("/login", login)
+router.post("/register", register);
+router.post("/login", login);
 ```
 
 And now we can test it!
@@ -461,11 +400,11 @@ Add this to auth_controller.js:
 
 ```javascript
 const logout = function(req, res) {
-	req.logout()
-	console.log("logged out user")
-	console.log("session object:", req.session)
-	console.log("req.user:", req.user)
-	res.sendStatus(200)
+	req.logout();
+	console.log("logged out user");
+	console.log("session object:", req.session);
+	console.log("req.user:", req.user);
+	res.sendStatus(200);
 }
 ```
 
@@ -478,21 +417,25 @@ module.exports = {
 	register,
 	login,
 	logout
-}
+};
 ```
 
 Then add the route to auth_routes.js:
 
 ```javascript
-const express = require("express")
-const router = express.Router()
-const { register, login, logout } = require("../controllers/auth_controller")
+const express = require('express');
+const router = express.Router();
+const {
+    register,
+    login,
+    logout
+} = require('../controllers/auth_controller');
 
-router.post("/register", register)
-router.post("/login", login)
-router.get("/logout", logout)
+router.post('/register', register);
+router.post('/login', login);
+router.get('/logout', logout);
 
-module.exports = router
+module.exports = router;
 ```
 
 ## Testing the logout route
@@ -520,15 +463,14 @@ Now we can authenticate users! Let's put that feature to work. In our blog app, 
 We will add a piece of middleware to our posts_controller.js that will determine if we have an authenticated user in the session. We can use a helper method called `isAuthenticated()`, provided by passport on the request object. If it returns true, we'll call next(), and if not, we'll send a 403 (Forbidden) status:
 
 posts_controller.js
-
 ```javascript
-const userAuthenticated = function(req, res, next) {
-	if (req.isAuthenticated()) {
-		return next()
-	} else {
-		res.sendStatus(403)
-	}
-}
+const userAuthenticated = function (req, res, next) {
+    if (req.isAuthenticated()) {
+        next();
+    } else {
+        res.sendStatus(403);
+    }
+}s
 ```
 
 To use this middleware, we need to export it from posts_controller.js:
@@ -541,7 +483,7 @@ module.exports = {
 	removePost,
 	changePost,
 	userAuthenticated
-}
+};
 ```
 
 We'll import it to posts_routes.js so we can use it. We could add it to each of the three routes individually like this:
@@ -552,17 +494,17 @@ posts_routes.js
 // CREATE
 // POST on '/posts'
 // Creates a new post
-router.post("/", userAuthenticated, makePost)
+router.post("/", userAuthenticated, makePost);
 
 // DELETE
 // DELETE on '/posts/:id'
 // Deletes a post with id
-router.delete("/:id", userAuthenticated, removePost)
+router.delete("/:id", userAuthenticated, removePost);
 
 // UPDATE
 // PUT on 'posts/:id'
 // Updates a post with id
-router.put("/:id", userAuthenticated, changePost)
+router.put("/:id", userAuthenticated, changePost);
 ```
 
 Alternatively, we could just use it once, before the routes where we want it applied:
@@ -570,45 +512,45 @@ Alternatively, we could just use it once, before the routes where we want it app
 posts_routes.js
 
 ```javascript
-const express = require("express")
-const router = express.Router()
+const express = require('express');
+const router = express.Router();
 const {
-	getPosts,
-	getPost,
-	makePost,
-	removePost,
-	changePost,
-	userAuthenticated
-} = require("../controllers/posts_controller")
+    getPosts,
+    getPost,
+    makePost,
+    removePost,
+    changePost,
+    userAuthenticated
+} = require('../controllers/posts_controller');
 
 // READ
 // GET on '/posts'
 // Returns all posts
-router.get("/", getPosts)
+router.get('/', getPosts);
 
 // READ
 // GET on '/posts/:id'
 // Returns post with given id
-router.get("/:id", getPost)
+router.get('/:id', getPost);
 
 // For post, delete, put -require authenticated user
-router.use(userAuthenticated)
+router.use(userAuthenticated);
 // CREATE
 // POST on '/posts'
 // Creates a new post
-router.post("/", makePost)
+router.post('/', makePost);
 
 // DELETE
 // DELETE on '/posts/:id'
 // Deletes a post with id
-router.delete("/:id", removePost)
+router.delete('/:id', removePost);
 
 // UPDATE
 // PUT on 'posts/:id'
 // Updates a post with id
-router.put("/:id", changePost)
+router.put('/:id', changePost);
 
-module.exports = router
+module.exports = router;
 ```
 
 The result of doing this is that the GET routes for `/posts` will not use the middleware, but all of the routes defined after the `use` statement (CREATE, DELETE, and UPDATE routes) will use it.
@@ -618,24 +560,22 @@ The result of doing this is that the GET routes for `/posts` will not use the mi
 Right now, we are assuming the username comes from the client when we create a blog post, but this isn't quite right. We should get the username from the currently logged in user. This is a simple change in `makePost` in `posts_controller.js`:
 
 posts_controller.js
-
 ```javascript
-const makePost = function(req, res) {
-	// add the username from req.user
-	req.body.username = req.user.username
-	// addPost returns a promise
-	addPost(req)
-		.then(post => {
-			res.status(201)
-			res.send(post)
-		})
-		.catch(err => {
-			res.status(500)
-			res.json({
-				error: err.message
-			})
-		})
-}
+const makePost = function (req, res) {
+    // add the username from req.user
+    req.body.username = req.user.username;
+    // save the Post instance from addPost
+    addPost(req).save((err, post) => {
+        if (err) {
+            res.status(500);
+            res.json({
+                error: err.message
+            });
+        }
+        res.status(201);
+        res.send(post);
+    });
+};
 ```
 
 ## Testing authentication
@@ -658,10 +598,40 @@ We're nearly done, but there is one more thing to handle. We want any authentica
 
 ## Only allow blog post owner to delete and update
 
-We can accomplish this using another piece of middleware in posts_routes.js that we will define in posts_controller.js. The middleware will get the post from the id passed to DELETE, and make sure the `post.username` matches the `req.user.username`. If it doesn't, it will set an error on req, that we will check for in `makePost` and `changePost`:
+We can accomplish this using another piece of middleware in posts_routes.js that we will define in posts_controller.js. The middleware will get the post from the id passed to DELETE, and make sure the `post.username` matches the `req.user.username`. If it doesn't, it will set an error on req. We will have to export it so we can use it from the posts router:
 
 posts_controller.js
+```javascript
+const verifyOwner = function (req, res, next) {
+    // If post owner isn't currently logged in user, send forbidden
 
+    if (req.user.role === 'admin') {
+        next();
+    } else {
+        getPostById(req).exec((err, post) => {
+            if (err) {
+                req.error = {
+                    message: 'Post not found',
+                    status: 404
+                }
+                next();
+            }
+            if (req.user.username !== post.username) {
+                req.error = {
+                    message: 'You do not have permission to modify this post',
+                    status: 403
+                };
+            }
+            next();
+        });
+    }
+}
+```
+
+
+We need to change the `removePost` and `changePost` functions to check for the error:
+
+posts_controller.js
 ```javascript
 const removePost = function (req, res) {
     // Check for error from middleware
@@ -669,14 +639,16 @@ const removePost = function (req, res) {
         res.status(req.error.status);
         res.send(req.error.message);
     } else {
-        // deletePost returns a promise
-        deletePost(req.params.id).then(() => res.sendStatus(204))
-            .catch((err) => {
+        // execute the query from deletePost
+        deletePost(req.params.id).exec((err) => {
+            if (err) {
                 res.status(500);
                 res.json({
                     error: err.message
-                })
-            });
+                });
+            }
+            res.sendStatus(204);
+        });
     }
 };
 
@@ -686,69 +658,65 @@ const changePost = function (req, res) {
         res.status(req.error.status);
         res.send(req.error.message);
     } else {
-        // updatePost returns a promise
-        updatePost(req).then((post) => {
+        // execute the query from updatePost
+        updatePost(req).exec((err, post) => {
+            if (err) {
+                res.status(500);
+                res.json({
+                    error: err.message
+                });
+            }
             res.status(200);
             res.send(post);
-        }).catch((err) => {
-            res.status(500);
-            res.json({
-                error: err.message
-            })
         });
     }
 };
-
-const verifyOwner = function (req, res, next) {
-    // If post owner isn't currently logged in user, send forbidden
-
-    if (req.user.role === 'admin') {
-        next();
-    } else {
-        getPostById(req).then((post) => {
-                if (req.user.username !== post.username) {
-                    req.error = {
-                        message: 'You do not have permission to modify this post',
-                        status: 403
-                    };
-                }
-                next();
-            })
-            .catch((err) => {
-                req.error = {
-                    message: 'Post not found',
-                    status: 404
-                }
-                next();
-            });
-    }
-}
-
-module.exports = {
-	getPosts,
-	getPost,
-	makePost,
-	removePost,
-	changePost,
-	userAuthenticated,
-	verifyOwner
-}
 ```
 
 Now use the middleware in posts_routes.js. We will have to use the middleware directly in the route implementations or `params.id` won't be set on the request object (make sure you remember to add this new middleware function to the `require` statement for posts_controller):
 
 posts_routes.js
-
 ```javascript
+const express = require('express');
+const router = express.Router();
+const {
+    getPosts,
+    getPost,
+    makePost,
+    removePost,
+    changePost,
+    userAuthenticated,
+    verifyOwner
+} = require('../controllers/posts_controller');
+
+// READ
+// GET on '/posts'
+// Returns all posts
+router.get('/', getPosts);
+
+// READ
+// GET on '/posts/:id'
+// Returns post with given id
+router.get('/:id', getPost);
+
+// For post, delete, put -require authenticated user
+router.use(userAuthenticated);
+// CREATE
+// POST on '/posts'
+// Creates a new post
+router.post('/', makePost);
+
 // DELETE
 // DELETE on '/posts/:id'
 // Deletes a post with id
-router.delete("/:id", verifyOwner, removePost)
+router.delete('/:id', verifyOwner, removePost);
 
 // UPDATE
 // PUT on 'posts/:id'
 // Updates a post with id
-router.put("/:id", verifyOwner, changePost)
+router.put('/:id', verifyOwner, changePost);
+
+module.exports = router;
 ```
 
 That should do it. Test that if you create a post with a logged in user, you can update and delete that post. Also test that if you try to delete or update a post that was created by another user, you cannot update or delete it.
