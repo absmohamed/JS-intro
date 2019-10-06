@@ -90,6 +90,13 @@ app.listen(port, () => {
 
 Mongoose creates its models from **schemas**. Schemas allow us to define the fields we are going to store in the database, any validation we would like to apply and default values as well.
 
+We do not have to define all the fields we'll use for a model in the schema - it is optional. A NoSQL database has a **flexible schema**. This means that:
+- it can be dynamically changed
+- different documents can have different fields in the same collection
+- the same field can store different types in a collection
+
+However, we can use a schema definition to help enforce some consistency and validation in our data model and the data stored by our application.
+
 Lets create our first schema for holding information about our blog posts. We need to decide where to store our model definitions. There is no particular code structure we have to follow, or even strong conventions. What's important is that we choose a logical structure that is consistent within a given project.
 
 We will create a directory called models, and store our Post model and schema in a file called post.js. This mimics what we did in Rails.
