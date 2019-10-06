@@ -8,6 +8,7 @@ Mongoose is an ODM (object data modelling) node module that we will use to make 
   - [Mongoose queries](#mongoose-queries)
     - [All database operations are asynchronous operations](#all-database-operations-are-asynchronous-operations)
   - [Using Post.find to implement READ](#using-postfind-to-implement-read)
+  - [Sorting the results](#sorting-the-results)
   - [Testing asynchronous code](#testing-asynchronous-code)
   - [Setting up test data](#setting-up-test-data)
     - [Connect to test database](#connect-to-test-database)
@@ -16,11 +17,11 @@ Mongoose is an ODM (object data modelling) node module that we will use to make 
   - [Run the test for the new getAllPosts](#run-the-test-for-the-new-getallposts)
   - [Using Post.find to get a specific post by id](#using-postfind-to-get-a-specific-post-by-id)
   - [Test getPost](#test-getpost)
-  - [Using Post.create to implement CREATE](#using-postcreate-to-implement-create)
+  - [Using new and save or Post.create to implement CREATE](#using-new-and-save-or-postcreate-to-implement-create)
   - [Data validation for create](#data-validation-for-create)
   - [Using post.findbyIdAndRemove for DELETE](#using-postfindbyidandremove-for-delete)
   - [Using Post.findByIdAndUpdate for UPDATE](#using-postfindbyidandupdate-for-update)
-  - [Challenge](#challenge)
+  - [Challenges](#challenges)
 
 ## Resources
 
@@ -188,11 +189,16 @@ The mongoose query documentation lists these [helper functions for CRUD operatio
 
 ### All database operations are asynchronous operations
 
-As we should expect, all of the functions we execute on the database are asynchronous and return a promise.
+As we should expect, all of the functions we execute on the database are asynchronous. 
 
 _Why would that be?_
 
-When we're querying a database, we are communicating from one server to another to send and retrieve information. When we're developing, these two servers are running on a single host - our laptop. However, when we deploy, these two servers will be separated geographically. Our MongoDB server will be deployed on mlab, and our server application on heroku, for example. These requests could take some time to complete (or may never complete if there are issues), so it makes sense for them to be executed asynchronously. When they return, their promises resolve, and we can handle the data that is returned in `then`. If there is an issue, we can handle the errors in `catch`.
+When we're querying a database, we are communicating from one server to another to send and retrieve information. When we're developing, these two servers are running on a single host - our laptop. However, when we deploy, these two servers will be separated geographically. Our MongoDB server will be deployed on mlab, and our server application on heroku, for example. These requests could take some time to complete (or may never complete if there are issues), so it makes sense for them to be executed asynchronously. 
+
+We can pass a callback to any mongoose query, and when it returns, the callback will be passed the result and any error. The pattern for passing this information to the query callback function is callback(error, results). What results is depends on the operation: For findOne() it is a potentially-null single document (object), for find() a list of documents (array), for count() the number of documents (a number), for update() the number of documents affected (a number).
+
+
+When no callback is passed, the [query](https://mongoosejs.com/docs/api.html#query_Query) that is returned can be executed to access any data or errors. We can chain additional operations on the query object to filter or sort the results.
 
 This is unlike our local file implementation, where we persisted all of our data in memory while our app ran, and therefore it made sense for all data operations to be implemented synchronously. We will have to handle this asynchronicity in our app implementation.
 
@@ -210,34 +216,58 @@ So we could change our implementation of `getAllPosts` in `utilities.js` to the 
 
 ```javascript
 // get all posts
-// return a promise
+// return a query
 const getAllPosts = function(req) {
 	return Post.find()
 }
 ```
 
-In the controller, we will have to handle the promise that is returned, or the error. We'll send the error back as a json object so the client can expect json in either case:
+In the controller, we will execute the query that is retured with a callback function. We'll send any error back as a json object so the client can expect json in either case:
 
 posts_controller.js
 
 ```javascript
-const getPosts = function(req, res) {
-	// getAllPosts returns a promise, or an error
-	getAllPosts(req)
-		.then(posts => {
-			res.send(posts)
-		})
-		.catch(err => {
-			// Errors are passed back from mongodb
-			res.status(500)
-			res.json({
-				error: err.message
-			})
-		})
-}
+const getPosts = function (req, res) {
+    // execute the query from getAllPosts
+    getAllPosts(req).exec((err, posts) => {
+        if (err) {
+            res.status(500);
+            res.json({
+                error: err.message
+            });
+        }
+        res.send(posts);
+    });
+};
 ```
 
-The only thing that is really different here is that we are sending back the response and status in `then` or `done` when the promise settles, instead of sending it back directly from `getPosts`.
+The only thing that is really different here is that we are sending back the response and status in the callback passed to `exec`, instead of sending it back directly from `getPosts` in utilities.
+
+## Sorting the results
+
+It would make sense to sort the blog posts by last modified, so we see the most recent posts first. We can use the `sort` method on the query, before we call `exec`, to do this.
+
+The sort method is passed an object where the key is the field on which to sort, and we indicate an ascending sort with the number `1` and a descending sort with the number `-1`. To sort by `modified_date` with the most recent first, we would use `sort({modified_date: -1})`:
+
+posts_controller.js
+```javascript
+const getPosts = function (req, res) {
+    // execute the query from getAllPosts
+    getAllPosts(req).
+    sort({
+        modified_date: -1
+    }).
+    exec((err, posts) => {
+        if (err) {
+            res.status(500);
+            res.json({
+                error: err.message
+            });
+        }
+        res.send(posts);
+    });
+};
+```
 
 ## Testing asynchronous code
 
@@ -337,12 +367,10 @@ utilities.test.js
 
 ```javascript
 // Delete test data after each test
-afterEach(done => {
-	//   // Empty test file data
-	tearDownData()
-		.then(() => done())
-		.catch(() => done())
-})
+afterEach((done) => {
+    // Execute the deleteMany query
+    tearDownData().exec(() => done());
+});
 
 function tearDownData() {
 	return Post.deleteMany()
@@ -356,22 +384,25 @@ Testing of the utilities functions is mostly the same as what we already have. T
 utilities.test.js
 
 ```javascript
-describe("getAllPosts with one post", () => {
-	it("should get a post if one exists", async function() {
-		let req = {
-			query: {}
-		}
-		let posts = await utilities.getAllPosts(req)
-		expect(Object.keys(posts).length).toBe(1)
-	})
-	it("username of first post should be tester", async function() {
-		let req = {
-			query: {}
-		}
-		let posts = await utilities.getAllPosts(req)
-		expect(posts[0].username).toBe("tester")
-	})
-})
+describe('getAllPosts with one post', () => {
+    it('should get a post if one exists', async function () {
+        let req = {
+            query: {}
+        };
+        await utilities.getAllPosts(req).exec((err, posts) => {
+            expect(Object.keys(posts).length).toBe(1);
+        });
+    });
+    it('username of first post should be tester', async function () {
+        let req = {
+            query: {}
+        };
+        await utilities.getAllPosts(req).exec((err, posts) => {
+            expect(posts[0].username).toBe('tester');
+        });
+
+    });
+});
 ```
 
 ## Run the test for the new getAllPosts
@@ -381,22 +412,25 @@ describe("getAllPosts with one post", () => {
 utilities.test.js
 
 ```javascript
-describe.only("getAllPosts with one post", () => {
-	it("should get a post if one exists", async function() {
-		let req = {
-			query: {}
-		}
-		let posts = await utilities.getAllPosts(req)
-		expect(Object.keys(posts).length).toBe(1)
-	})
-	it("username of first post should be tester", async function() {
-		let req = {
-			query: {}
-		}
-		let posts = await utilities.getAllPosts(req)
-		expect(posts[0].username).toBe("tester")
-	})
-})
+describe.only('getAllPosts with one post', () => {
+    it('should get a post if one exists', async function () {
+        let req = {
+            query: {}
+        };
+        await utilities.getAllPosts(req).exec((err, posts) => {
+            expect(Object.keys(posts).length).toBe(1);
+        });
+    });
+    it('username of first post should be tester', async function () {
+        let req = {
+            query: {}
+        };
+        await utilities.getAllPosts(req).exec((err, posts) => {
+            expect(posts[0].username).toBe('tester');
+        });
+
+    });
+});
 ```
 
 Try running `npm test` to verify the updated test works, and that our mongoose model is also working as expected.
@@ -415,7 +449,7 @@ utilties.js
 
 ```javascript
 // get post by id
-// returns a promise
+// returns a query
 const getPostById = function(req) {
 	return Post.findById(req.params.id)
 }
@@ -423,22 +457,21 @@ const getPostById = function(req) {
 
 _What change do we need to make in `posts_controller.js`?_
 
-We need to move the handling of the response to the promise resolution methods (`then` and `catch`):
+We need to move the handling of the response to the exec method:
 
 posts_controller.js
 
 ```javascript
-const getPost = function(req, res) {
-	// getPostById returns a promise
-	getPostById(req)
-		.then(post => {
-			res.send(post)
-		})
-		.catch(err => {
-			res.status(404)
-			res.send("Post not found")
-		})
-}
+const getPost = function (req, res) {
+    // execute the query from getPostById
+    getPostById(req).exec((err, post) => {
+        if (err) {
+            res.status(404);
+            res.send("Post not found");
+        }
+        res.send(post);
+    });
+};
 ```
 
 ---
@@ -456,21 +489,22 @@ Move the .only to the updated `describe` block for the `getPost` test in `utilit
 utilties.test.js
 
 ```javascript
-describe.only("getPostById", () => {
-	it("username of first post should be tester", async function() {
-		// Set up req with postId
-		let req = {
-			params: {
-				id: postId
-			}
-		}
-		let post = await utilities.getPostById(req)
-		expect(post.username).toBe("tester")
-	})
-})
+describe.only('getPostById', () => {
+    it('username of first post should be tester', async function () {
+        // Set up req with postId
+        let req = {
+            params: {
+                id: postId
+            }
+        }
+        await utilities.getPostById(req).exec((err, post) => {
+            expect(post.username).toBe('tester');
+        });
+    });
+});
 ```
 
-## Using Post.create to implement CREATE
+## Using new and save or Post.create to implement CREATE
 
 Next we will update our implementation of `addPost` in `utitilies.js`, and `makePost` in `posts_controller.js`.
 
@@ -478,44 +512,66 @@ utilties.js
 
 ```javascript
 // add post
-// returns a promise
-const addPost = function(req) {
-	let date = Date.now()
-	// Set dates for this new post
-	req.body.create_date = date
-	req.body.modified_date = date
-	return Post.create(req.body)
-}
+// returns a new Post object
+const addPost = function (req) {
+    let date = Date.now();
+    // Set dates for this new post
+    req.body.create_date = date;
+    req.body.modified_date = date;
+    return new Post(req.body);
+};
 ```
 
-This is much cleaner than our file-persisted implementation! We set the `create_date` and `modified_date` properties on `req.body` to the current datetime, then just call `Post.create` with `req.body`. This works because `req.body` is just an object with all of the properties for our blog post document, so we just need to pass that object to `Post.create`.
+This is much cleaner than our file-persisted implementation! We set the `create_date` and `modified_date` properties on `req.body` to the current datetime, then just instantiate a new Post with `req.body`. This works because `req.body` is just an object with all of the properties for our blog post document, so we just need to pass that object to the Post class constructor.
 
-You can test `addPost` now by moving the `.only` to the `describe` for the `addPost` test.
+You can test `addPost` now by moving the `.only` to the `describe` for the `addPost` test. This test will create a post body to pass in req.body, then save the post that is returned. In the callback it will test that the saved post has the expected title:
+
+utilities.test.js
+```javascript
+// addPost
+describe.only('addPost', () => {
+    it('should add a post', async function () {
+        // define a req object with expected structure
+        const req = {
+            body: {
+                title: "Another post",
+                username: "tester",
+                content: "This is another blog post!",
+                category: ""
+            }
+        }
+        await utilities.addPost(req).save((err, post) => {
+            expect(post.title).toBe(req.body.title);
+        });
+    });
+});
+```
 
 **What about data validation?**
 
 ## Data validation for create
 
-We are doing some very basic validation in our schema, checking that all required fields are provided. We can check on what happens by running our test, and omitting a required field in our test document:
+We are doing some very basic validation in our schema, checking that all required fields are provided. We can check on what happens by running our test, and omitting a required field (username) in our test document:
 
 utilties.test.js
 
 ```javascript
 // addPost
 describe.only("addPost", () => {
-	it("should add a post", async function() {
-		// define a req object with expected structure
-		const req = {
-			body: {
-				title: "Another post",
-				// username: "tester",
-				content: "This is another blog post!",
-				category: ""
-			}
-		}
-		let post = await utilities.addPost(req)
-		expect(post.title).toBe(req.body.title)
-	})
+    it('should add a post', async function () {
+        // define a req object with expected structure
+        const req = {
+            body: {
+                title: "Another post",
+                // username: "tester",
+                content: "This is another blog post!",
+                category: ""
+            }
+        }
+        await utilities.addPost(req).save((err, post) => {
+            expect(post.title).toBe(req.body.title);
+        });
+    });
 })
 ```
 
@@ -533,25 +589,24 @@ Undo the change to make the `addPost` test pass again.
 
 **Updating the posts_controller.js for CREATE**
 
-Similar to what we had to do for the READ routes, we need to handle the response in the promise resolution for the promise returned by the `addPost` function in utilities:
+Similar to what we had to do for the READ routes, we need to execute the save on the Post object returned by `addPost` in utilities, and handle the response in the callback function we pass to it:
 
 posts_controller.js
 
 ```javascript
-const makePost = function(req, res) {
-	// addPost returns a promise
-	addPost(req)
-		.then(post => {
-			res.status(201)
-			res.send(post)
-		})
-		.catch(err => {
-			res.status(500)
-			res.json({
-				error: err.message
-			})
-		})
-}
+const makePost = function (req, res) {
+    // save the Post instance from addPost
+    addPost(req).save((err, post) => {
+        if (err) {
+            res.status(500);
+            res.json({
+                error: err.message
+            });
+        }
+        res.status(201);
+        res.send(post);
+    });
+};
 ```
 
 ## Using post.findbyIdAndRemove for DELETE
@@ -562,7 +617,7 @@ utilties.js
 
 ```javascript
 // delete post
-// returns a promise
+// returns a query
 const deletePost = function(id) {
 	return Post.findByIdAndRemove(id)
 }
@@ -574,33 +629,36 @@ utilities.test.js
 
 ```javascript
 // deletePost
-describe.only("deletePost", () => {
-	it("should delete the specified post", async function() {
-		await utilities.deletePost(postId)
-		let post = await Post.findById(postId)
-		expect(post).toBe(null)
-	})
-})
+describe.only('deletePost', () => {
+    it('should delete the specified post', async function () {
+        await utilities.deletePost(postId).exec();
+        await Post.findById(postId).exec((err, post) => {
+            expect(post).toBe(null);
+        });
+    });
+});
 ```
 
 **Updating the posts_controller for DELETE**
 
-Once again, we just have to make a change to handle the promise returned by utilties.js:
+Once again, we just have to make a change to exec the query returned by utilties.js and handle the response in a callback function:
 
 posts_controller.js
 
 ```javascript
-const removePost = function(req, res) {
-	// deletePost returns a promise
-	deletePost(req.params.id)
-		.then(() => res.sendStatus(204))
-		.catch(err => {
-			res.status(500)
-			res.json({
-				error: err.message
-			})
-		})
-}
+const removePost = function (req, res) {
+    // execute the query from deletePost
+    deletePost(req.params.id).exec((err) => {
+        if (err) {
+            res.status(500);
+            res.json({
+                error: err.message
+            });
+        }
+        res.sendStatus(204);
+
+    });
+};
 ```
 
 ## Using Post.findByIdAndUpdate for UPDATE
@@ -609,23 +667,21 @@ Another useful mongoose helper function can be used for update. We need to pass 
 
 - the id of the post document to update (in req.params.id)
 - the document object properties (in req.body)
-- an option `{new:true}`, which indicates we want the function to return the post document with the modifications (by default it returns the document prior to any modification)
+- an option `{new:true}`, which indicates we want the exec function to return the post document with the modifications (by default it returns the document prior to any modification)
 
 _Note that you may decide you want findByIdAndUpdate to return the document prior to modification - it depends on your implementation. If so, just leave out the {new:true} option._
 
 utilities.js
-
 ```javascript
 // update post
-// returns a promise
-const updatePost = function(req) {
-	// Set the modified_date to now on req.body
-	req.body.modified_date = Date.now()
-	// use new:true to return the updated post rather than the original post
-	return Post.findByIdAndUpdate(req.params.id, req.body, {
-		new: true
-	})
-}
+// returns a query
+const updatePost = function (req) {
+    req.body.modified_date = Date.now();
+    // use new:true to return the updated post rather than the original post when the query is executed
+    return Post.findByIdAndUpdate(req.params.id, req.body, {
+        new: true
+    });
+};
 ```
 
 Test this by moving `.only` to the `describe` for the `updatePost` test in utitilities.test.js:
@@ -634,54 +690,54 @@ utilties.test.js
 
 ```javascript
 // updatePost
-describe.only("updatePost", () => {
-	it("should update a post", async function() {
-		// set up a req object
-		const req = {
-			params: {
-				id: postId
-			},
-			body: {
-				title: "Updated post",
-				username: "tester",
-				content: "This is an updated blog post!",
-				category: ""
-			}
-		}
-		let post = await utilities.updatePost(req)
-		expect(post.title).toBe(req.body.title)
-	})
-})
+describe('updatePost', () => {
+    it('should update a post', async function () {
+        // set up a req object
+        const req = {
+            params: {
+                id: postId
+            },
+            body: {
+                title: "Updated post",
+                username: "tester",
+                content: "This is an updated blog post!",
+                category: ""
+            }
+        };
+        await utilities.updatePost(req).exec((err, post) => {
+            expect(post.title).toBe(req.body.title);
+        });
+    });
+});
 ```
 
 **Updating the posts_controller for UPDATE**
 
-Finally, update the posts_controller to handle the promise returned from `updatePost` in utilities:
+Finally, update the posts_controller to execute the query returned from `updatePost` in utilities:
 
 posts_controller.js
 
 ```javascript
-const changePost = function(req, res) {
-	// updatePost returns a promise
-	updatePost(req)
-		.then(post => {
-			res.status(200)
-			res.send(post)
-		})
-		.catch(err => {
-			res.status(500)
-			res.json({
-				error: err.message
-			})
-		})
-}
+const changePost = function (req, res) {
+    // execute the query from updatePost
+    updatePost(req).exec((err, post) => {
+        if (err) {
+            res.status(500);
+            res.json({
+                error: err.message
+            });
+        }
+        res.status(200);
+        res.send(post);
+    });
+};
 ```
 
 You can clean up the `utilities.js` and `utilities.test.js` to remove any require and exports that were related to our file-persisted implementation. The completed code can be found in the code-complete folder in this repository if you need some guidance.
 
 You can also remove the `.only` from utilities.test.js and make sure all of the tests are passing.
 
-## Challenge
+## Challenges
 
 **Adding Validations**
 
