@@ -547,9 +547,9 @@ describe.only('addPost', () => {
 });
 ```
 
-Notice that we used `save` instead of `exec`. This is because `addPost` returns a new Post object that was instantiated with `new Post`. To persist the associated document to the database, we use `save`.
+Notice that we used `save` instead of `exec`. This is because `addPost` returns a new Post object that was instantiated with `new Post`. To persist the associated document to the database, we use the model instance method, `save`, which returns a promise (like `exec`).
 
-Contrast this with [what we are doing in our test setup function](#setup-and-tear-down-for-each-test), where we call `Post.create`. If we call `Post.create`, it executes the `save` and returns a promise.
+Contrast this with [what we are doing in our test setup function](#setup-and-tear-down-for-each-test), where we call `Post.create`, a static method on the Post class. If we call `Post.create`, it executes the `save` and returns a promise.
 
 **What about data validation?**
 
