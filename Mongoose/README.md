@@ -198,7 +198,7 @@ When we're querying a database, we are communicating from one server to another 
 We can pass a callback to any mongoose query, and when it returns, the callback will be passed the result and any error. The pattern for passing this information to the query callback function is callback(error, results). What results is depends on the operation: For findOne() it is a potentially-null single document (object), for find() a list of documents (array), for count() the number of documents (a number), for update() the number of documents affected (a number).
 
 
-When no callback is passed, the [query](https://mongoosejs.com/docs/api.html#query_Query) that is returned can be executed to access any data or errors. We can chain additional operations on the query object to filter or sort the results.
+When no callback is passed, the [query](https://mongoosejs.com/docs/api.html#query_Query) that is returned can be executed to access any data or errors with the `exec` function. The `exec` function returns a promise, or it can be passed a callback function as a parameter. We can chain additional operations on the query object to filter or sort the results prior to calling `exec`, as we'll see later.
 
 This is unlike our local file implementation, where we persisted all of our data in memory while our app ran, and therefore it made sense for all data operations to be implemented synchronously. We will have to handle this asynchronicity in our app implementation.
 
@@ -222,7 +222,7 @@ const getAllPosts = function(req) {
 }
 ```
 
-In the controller, we will execute the query that is retured with a callback function. We'll send any error back as a json object so the client can expect json in either case:
+In the controller, we will execute the query that is retured and pass it a callback function. We'll send any error back as a json object so the client can expect json in either case:
 
 posts_controller.js
 
