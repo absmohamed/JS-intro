@@ -24,6 +24,7 @@
     - [clearCookie route](#clearcookie-route)
   - [Using httpOnly from the server](#using-httponly-from-the-server)
   - [Signing a cookie from the server](#signing-a-cookie-from-the-server)
+  - [Challenge - the secret cookie value](#challenge---the-secret-cookie-value)
 
 ## References
 - [What is a cookie?](https://www.youtube.com/watch?v=I01XMRo2ESg)
@@ -404,3 +405,7 @@ app.get('/', (req, res) => {
 Refresh from Firefox and see that the server logs and responds with information about the signed cookie now.
 
 Even if we try to change it from the client now, we won't be successful. You can give it a try!
+
+## Challenge - the secret cookie value
+
+In the challenge directory, you will find instructions for a (hopefully) fun challenge. See if you can figure out what the server is doing to your cookie value!
