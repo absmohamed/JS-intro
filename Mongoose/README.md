@@ -437,7 +437,7 @@ Try running `npm test` to verify the updated test works, and that our mongoose m
 
 _How do we need to change the others?_
 
-Try to make those changes now so we can test as we change the other CRUD implementations.
+We'll have to make similar changes to the other tests, using `exec` to execute the queries that are returned from the utilities functions, awaiting their completion, and handling the assertion in the callback function passed to `exec`. 
 
 ## Using Post.find to get a specific post by id
 
