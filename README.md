@@ -96,3 +96,11 @@ Each day there will be a new directory added with the code snippets used for the
 ## Day 21
 
 - [Authentication](https://github.com/CoderAcademy-BRI/js-intro-lessons/tree/master/Authentication)
+
+## Day 22
+
+- [Deployment] To be added
+
+## Day 23
+
+- [Mongo - Advanced concepts](https://github.com/CoderAcademy-BRI/js-intro-lessons/tree/master/Mongo_Advanced)
