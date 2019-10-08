@@ -328,7 +328,7 @@ It should succeed:
 
 ![post comment from Postman succeeds](img/post-comment-postman-success.png)
 
-Notice that even though we didn't define a separate schema object for a comment in our `models/post.js`, and if we look in mongo shell, there is no comments collection, Mongo still creates a unique id for the comment object in our Post schema. This will allow us to access them later if we want to enable showing, editing, updating, or deleting single comments.
+Notice that even though we didn't define a separate schema object for a comment in our `models/post.js`, and if we look in mongo shell, there is no comments collection, Mongo still creates a unique id for the comment object in our Post schema. This won't always be the case, depending on the version of MongoDB being used, and the use of middleware like Mongoid. If you want to ensure that an object id will be available, you can explicitly define it in your schema.
 
 ## Schema instance methods and static methods
 
