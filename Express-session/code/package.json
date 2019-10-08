@@ -1,0 +1,24 @@
+{
+    "name": "express-blog",
+    "version": "1.0.0",
+    "description": "Simple blog app to practice CRUD",
+    "main": "app.js",
+    "scripts": {
+        "test": "mocha",
+        "start": "nodemon app.js"
+    },
+    "author": "Janel",
+    "license": "ISC",
+    "dependencies": {
+        "body-parser": "^1.19.0",
+        "cors": "^2.8.5",
+        "express": "^4.17.1",
+        "mongoose": "^5.7.1"
+    },
+    "devDependencies": {
+        "expect": "^24.9.0",
+        "jest": "^24.9.0",
+        "mocha": "^6.2.0",
+        "nodemon": "^1.19.2"
+    }
+}
