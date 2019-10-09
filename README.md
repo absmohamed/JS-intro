@@ -81,7 +81,8 @@ Each day there will be a new directory added with the code snippets used for the
 
 ## Day 18
 
-- [Modularity, CRUD](https://github.com/CoderAcademy-BRI/js-intro-lessons/tree/master/Modularity)
+- [Modularity](https://github.com/CoderAcademy-BRI/js-intro-lessons/tree/master/Modularity)
+- [CRUD - Blog app](https://github.com/CoderAcademy-BRI/js-intro-lessons/tree/master/CRUD-Blog)
 
 ## Day 19
 
