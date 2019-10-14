@@ -147,6 +147,14 @@ The Procfile in the blog app you deployed looks like this:
 ```javaScript
 web: node app.js
 ```
+we should create/edit the .gitignore file, because there are some files and folders from the project we shouldn't include.
+
+```javaScript
+/node_modules
+npm-debug.log
+.DS_Store
+/*.env
+```
 
 We can check that our server stills run locally, but through Heroku, so use this command and let's see what happens.
 
