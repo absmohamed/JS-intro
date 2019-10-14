@@ -186,6 +186,10 @@ If we didn't have any error, we can go to Heroku in our browser, select our proj
 
 ## Challenge
 
+PART 1
+Create a client where you can do a request to your server with Fetch API that displays the posts. Add some HTML and CSS so the webpage looks like a blog.
+
+PART 2
 MongoDB Atlas and specially Heroku are very powerful cloud platforms. Do some research to discover different features, add-ons, etc. that may be helpful in your future projects. 
 
 Deploy another express server on Heroku (repeating the full process will help you to fix the steps), create some config variables and then try the different options in the heroku browser.
