@@ -1,101 +1,48 @@
-let dataFile = "../data/blog_posts.json"
-let blogPosts = require(dataFile)
+const Post = require("../models/post");
 
-const fs = require('fs');
 
+// const getAllPosts = function(req) {
+// 	return blogPosts
+// }
+
+// get all posts
+// return a query
 const getAllPosts = function(req) {
-	return blogPosts
+	return Post.find()
 }
+
 
 const getPostById = function(req) {
-	let post = blogPosts[req.params.id]
-	if (post) return post
-	else req.error = "Post not found"
+	return Post.findById(req.params.id)
 }
 
-// Allows flexibility for testing
-const setDataFile = function(fileName) {
-	dataFile = fileName
-	loadData()
-}
-
-// Loads data from dataFile
-function loadData() {
-	blogPosts = require(dataFile)
-}
-
-const getDataFileRelativeToApp = function(file) {
-	// Remove the ../ from the dataFile path for writing
-	// because the writeFile looks for path relative to the app, not utilities.js
-	return file.substring(file.lastIndexOf("../") + 3, file.length)
-}
-
-const addPost = function(req) {
-	try {
-		let id = getNextId()
-		// set create and modified date to now for a new post
-		let date = Date.now()
-		blogPosts[id] = {}
-		blogPosts[id].title = req.body.title
-		blogPosts[id].create_date = date
-		blogPosts[id].modified_date = date
-		blogPosts[id].username = req.body.username
-		blogPosts[id].content = req.body.content
-		blogPosts[id].category = req.body.category || ""
-		writePosts()
-		return blogPosts[id]
-	} catch (error) {
-		// Pass any errors back to the route handler
-		req.error = error
-		return null
-	}
-}
-
-// Returns the next available id for a blog post
-function getNextId() {
-	let ids = Object.keys(blogPosts)
-	let nextId = 1
-	if (ids.length != 0) nextId = ids[0]
-	for (let i = 1; i < ids.length; i++) {
-		if (ids[i] > nextId) nextId = ids[i]
-	}
-
-	nextId++
-	return nextId
-}
-
-// Writes blogPosts to the data file (synchronously)
-function writePosts() {
-	fs.writeFileSync(getDataFileRelativeToApp(dataFile), JSON.stringify(blogPosts))
-}
+// add post
+// returns a new Post object
+const addPost = function (req) {
+    let date = Date.now();
+    // Set dates for this new post
+    req.body.create_date = date;
+    req.body.modified_date = date;
+    return new Post(req.body);
+};
 
 const deletePost = function(id) {
-	if (Object.keys(blogPosts).includes(id)) delete blogPosts[id]
-	writePosts()
-	return blogPosts
+	return Post.findByIdAndRemove(id)
 }
 
-const updatePost = function(req) {
-	try {
-		let id = req.params.id
-		if (!blogPosts[id]) throw "Post not found"
-        blogPosts[id].title = req.body.title
-        blogPosts[id].username = req.body.username
-		blogPosts[id].content = req.body.content
-		blogPosts[id].modified_date = Date.now()
-		writePosts()
-		return blogPosts[id]
-	} catch (error) {
-		req.error = error
-		return null
-	}
-}
+// update post
+// returns a query
+const updatePost = function (req) {
+    req.body.modified_date = Date.now();
+    // use new:true to return the updated post rather than the original post when the query is executed
+    return Post.findByIdAndUpdate(req.params.id, req.body, {
+        new: true
+    });
+};
 
 module.exports = {
 	getAllPosts,
 	getPostById,
-	setDataFile,
-    getDataFileRelativeToApp,
     addPost,
     deletePost,
     updatePost
