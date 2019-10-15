@@ -81,7 +81,8 @@ Each day there will be a new directory added with the code snippets used for the
 
 ## Day 18
 
-- [Modularity, CRUD](https://github.com/CoderAcademy-BRI/js-intro-lessons/tree/master/Modularity)
+- [Modularity](https://github.com/CoderAcademy-BRI/js-intro-lessons/tree/master/Modularity)
+- [CRUD - Blog app](https://github.com/CoderAcademy-BRI/js-intro-lessons/tree/master/CRUD-Blog)
 
 ## Day 19
 
@@ -96,3 +97,19 @@ Each day there will be a new directory added with the code snippets used for the
 ## Day 21
 
 - [Authentication](https://github.com/CoderAcademy-BRI/js-intro-lessons/tree/master/Authentication)
+
+## Day 22
+
+- [Deployment] To be added
+
+## Day 23
+
+- [Mongo - Advanced concepts](https://github.com/CoderAcademy-BRI/js-intro-lessons/tree/master/Mongo_Advanced)
+
+## Day 24 - 27
+
+- Hackathon
+
+## Day 18
+
+- [React Intro](https://github.com/CoderAcademy-BRI/js-intro-lessons/tree/master/React_intro)
