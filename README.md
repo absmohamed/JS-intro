@@ -105,3 +105,11 @@ Each day there will be a new directory added with the code snippets used for the
 ## Day 23
 
 - [Mongo - Advanced concepts](https://github.com/CoderAcademy-BRI/js-intro-lessons/tree/master/Mongo_Advanced)
+
+## Day 24 - 27
+
+- Hackathon
+
+## Day 18
+
+- [React Intro](https://github.com/CoderAcademy-BRI/js-intro-lessons/tree/master/React_intro)

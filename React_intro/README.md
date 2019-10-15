@@ -2,12 +2,15 @@
 
 React is an open-source JavaScript library created by Facebook that is meant to show content to users (HTML) and handle any user interactions. In other words, it is a library used for front-end JavaScript development.
 
-React is javascript that is used to populate the DOM with content, and to update that content with user interaction. Part of its power comes from its component-based architecture and syntax, which allows us to build complex and powerful front-end applications with relatively simple code (it isn't simple, but compared to the code we would have to write in vanilla javascript to do the same thing - it is relatively simple).
+In this lesson, we will find out what React is and start to learn how to use it. We will use a popular _developer toolchain_ called **create-react-app** to generate our first React app, and learn some really cool benefits of using this package. We will learn about the structure of the app that is created with create-react-app, how we manage dependencies and how we start the application.
 
-The other thing that makes React powerful is its algorithms for determining when a changed component needs to be rendered again - or in other words, which parts of a web page need to be refreshed. The result is that any part of a web page is only refreshed when changes require it, making the performance of React apps better than what we could reasonably build with vanilla javascript.
+We will also find out what JSX is and how we use it, about using ReactDOM.render to add elements to the DOM so they show up in our app, and we'll take our first look at React components, which are the main architectural feature of React applications.
+
+By the end of this lesson, you will be able to create and run a simple React app.
 
 - [React Intro](#react-intro)
   - [References](#references)
+  - [React](#react)
   - [React and ReactDOM](#react-and-reactdom)
   - [React developer toolchains](#react-developer-toolchains)
   - [Create React App](#create-react-app)
@@ -31,6 +34,12 @@ The other thing that makes React powerful is its algorithms for determining when
 - [react package](https://www.npmjs.com/package/react)
 - [reactjs.org](https://reactjs.org)
 - [JSX](https://reactjs.org/docs/introducing-jsx.html)
+
+## React
+
+React is javascript that is used to populate the DOM with content, and to update that content with user interaction. Part of its power comes from its component-based architecture and syntax, which allows us to build complex and powerful front-end applications with relatively simple code (it isn't simple, but compared to the code we would have to write in vanilla javascript to do the same thing - it is relatively simple).
+
+The other thing that makes React powerful is its algorithms for determining when a changed component needs to be rendered again - or in other words, which parts of a web page need to be refreshed. The result is that any part of a web page is only refreshed when changes require it, making the performance of React apps better than what we could reasonably build with vanilla javascript.
 
 ## React and ReactDOM
 
