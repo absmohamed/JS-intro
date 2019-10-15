@@ -185,6 +185,7 @@ db.students.remove({ _id: ObjectId("5bfddca1224fa2cf8ef96431") })
 
 1. Familiarise yourself with the [documentation on MongoDB documents](https://docs.mongodb.com/manual/core/document/#bson-document-format). Make sure you can answer these questions:
    1. What is a BSON object?
-   2. What is the primary key for any document?
+   A BSON is the binary encoding of JSON-like documents that MongoDB uses when storing documents in collections. It adds support for data types like Date and binary that aren't supported in JSON.
+   2. What is the primary key for any document? The ObjectID is the primary key for any document
 2. Read the information about [BSON types](https://docs.mongodb.com/manual/reference/bson-types/). Follow the steps under `Timestamps` and `Date`, copying the code shown and pasting into the mongo shell, to learn how to deal with dates and times in MongoDB.
 3. Read the documentation for [query selectors](https://docs.mongodb.com/manual/reference/operator/query/). Get familiar with the query selectors available, then look at the documentation on [query documents](https://docs.mongodb.com/manual/tutorial/query-documents/). Follow the example there in the mongo shell. Make sure you understand how to use query selectors to get documents from MongoDB.
