@@ -10,7 +10,7 @@ const passport = require('passport');
 const userRouter = require('./routes/users_routes');
 
 
-const port = 3000
+const port = process.env.PORT || 3000
 
 const app = express();
 
@@ -20,7 +20,9 @@ app.use(bodyParser.json())
 
 
 
-const dbConn = "mongodb://localhost/blog_app"
+const dbConn = process.env.MONGODB_URI || "mongodb://localhost/blog_app"
+// const dbConn = "mongodb+srv://AbsCA:codebreaker@cluster0-270bf.mongodb.net/blog_app?retryWrites=true&w=majority"
+
 // Set three properties to avoid deprecation warnings:
 // useNewUrlParser: true
 // useUnifiedTopology: true
@@ -41,6 +43,7 @@ mongoose.connect(
 		}
 	}
 )
+
 app.use(
 	session({
 		// resave and saveUninitialized set to false for deprecation warnings
