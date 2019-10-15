@@ -266,9 +266,9 @@ This method is used to render _components_ in DOM _container nodes_. They are re
 
 The main application will generally render to the **root** node.
 
-The first argument the **render** method takes is a **JSX component**. And the second argument is the **DOM node** (container node) to which we are going to render the component. It optionally takes a callback function as a third argument that will be called when the render completes. If the component has already been rendered, it will be updated if any changes have been made to it, using React's diffing algorithm for effective updates.
+The first argument the **render** method takes is a **JSX element**. And the second argument is the **DOM node** (container node) to which we are going to render the component. It optionally takes a callback function as a third argument that will be called when the render completes. If the component has already been rendered, it will be updated if any changes have been made to it, using React's diffing algorithm for effective updates.
 
-To display our welcome message when the app is run, we can define that message as a JSX component, and render it to the `root` DOM container node:
+To display our welcome message when the app is run, we can define that message as a JSX element, and render it to the `root` DOM container node:
 
 index.js
 
@@ -279,7 +279,7 @@ import ReactDOM from "react-dom"
 ReactDOM.render(<h1>Hi there, my good friend!</h1>, document.getElementById("root"))
 ```
 
-And now we are rendering our content to the screen. If you’ve been paying attention these couple of lines we just wrote may seem a bit confusing. I said the first element we need to pass to the render method is a JSX component but that looks a lot like HTML. This `<h1>` tag may look like HTML but it is actually a JSX component whose purpose is to render an `<h1>` to the `root` DOM node.
+And now we are rendering our content to the screen. If you’ve been paying attention these couple of lines we just wrote may seem a bit confusing. I said the first element we need to pass to the render method is a JSX element but that looks a lot like HTML. This `<h1>` tag may look like HTML but it is actually a JSX element whose purpose is to render an `<h1>` to the `root` DOM node.
 
 ---
 
@@ -298,11 +298,11 @@ If you are finding that VSCode is destroying your formatting when you save, this
 
 ## Transpiled JSX
 
-Let's see what babel does with a JSX component.
+Let's see what babel does with a JSX element.
 
 _Go to - https://babeljs.io/repl_
 _Make sure react and es2016 are selected under presets in the lefthand bar._
-_Paste in the JSX component code from the call to render in index.js (`<h1>Hi there, my good friend!</h1>`)_
+_Paste in the JSX element code from the call to render in index.js (`<h1>Hi there, my good friend!</h1>`)_
 
 So, as we can see in the example babel has take our JSX and converted it to a JavaScript method call React.createElement(). We can verify this by taking the transpiled JSX and use it in our application. Replace what we currently have in index.js with what babel provides:
 
@@ -397,7 +397,7 @@ Whenever we create a component we can wrap it within <>, essentially turning it 
 
 ## Component Nesting
 
-What if we want to render multiple JSX components? It wouldn't be a good practice to have all of our logic in a single component that is rendered to the root node, so we'll have to be able to render multiple components in our root render. Let's see what happens if we try to render our greeting a couple of times in ReactDOM.render().
+What if we want to render multiple JSX elements? It wouldn't be a good practice to have all of our logic in a single component that is rendered to the root node, so we'll have to be able to render multiple components in our root render. Let's see what happens if we try to render our greeting a couple of times in ReactDOM.render().
 
 index.js
 
@@ -408,7 +408,7 @@ ReactDOM.render(
 );
 ```
 
-Hmmm….we get an error, "Adjacent JSX elements must be wrapped in an enclosing tag”. So what does this mean? Basically it means that JSX needs a single top level component. _You cannot render multiple JSX components that are siblings without them being nested within a single parent._ To fix our error lets wrap our custom JSX components within a `<div>` component.
+Hmmm….we get an error, "Adjacent JSX elements must be wrapped in an enclosing tag”. So what does this mean? Basically it means that JSX needs a single top level component. _You cannot render multiple JSX elements that are siblings without them being nested within a single parent._ To fix our error lets wrap our custom JSX elements within a `<div>` component.
 
 index.js
 
@@ -428,7 +428,7 @@ _Ok this is great and all but what problems to you see occurring if we keep stic
 
 It’s going to get very messy very quickly. Think about how many components our application may have!
 
-The great thing about React and JSX is that we can abstract away JSX components into other JSX components. Lets take the example above and split it up into more manageable code. We can create our own custom JSX component named <App /> which will hold all of the other components for our application.
+The great thing about React and JSX is that we can abstract away JSX elements into other JSX elements. Lets take the example above and split it up into more manageable code. We can create our own custom JSX element named <App /> which will hold all of the other components for our application.
 
 index.js
 
@@ -452,7 +452,7 @@ const App = () => {
 ReactDOM.render(<App />, document.getElementById("root"))
 ```
 
-Now this is looking much better. We only pass a single <App /> component to ReactDOM.render() and within that <App /> component we use component nesting to render the rest of our application. Notice however we weren’t able to get rid of that enclosing `<div>` component. Even our custom components must still only render 1 top level JSX component.
+Now this is looking much better. We only pass a single <App /> component to ReactDOM.render() and within that <App /> component we use component nesting to render the rest of our application. Notice however we weren’t able to get rid of that enclosing `<div>` component. Even our custom components must still only render 1 top level JSX element.
 
 Note that if you want to format the JSX that is returned on multiple lines like it is shown here, you need to include the parentheses () around the JSX that is returned.
 
