@@ -20,7 +20,7 @@
     "passport-local-mongoose": "^5.0.1"
   },
   "devDependencies": {
-    "mocha": "^6.2.1",
+    "mocha": "^10.2.0",
     "nodemon": "^1.19.3",
     "expect": "^24.9.0"
   },
